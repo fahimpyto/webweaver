@@ -3,31 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Crawler Graph</title>
+    <title>Vertical Crawler Map</title>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%);
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --card-border: #e0e0e0;
-            --line-color: #aab;
-            --highlight-color: #ffd700;
-            --primary-color: #4f46e5;
+            --bg-color: #1a1a2e;
+            --card-bg: #ffffff;
+            --line-color: #4b5563;
+            --primary: #4f46e5;
             --text-main: #1f2937;
             --text-sub: #6b7280;
-            --node-width: 220px;
-            --node-height: 80px;
-            --level-height: 180px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-gradient);
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-color);
             color: white;
             height: 100vh;
             overflow: hidden;
@@ -35,195 +26,135 @@
             flex-direction: column;
         }
 
-        /* --- Header & Controls --- */
+        /* --- Header --- */
         header {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 15px 30px;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             z-index: 100;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .title { font-size: 1.4rem; font-weight: bold; color: #818cf8; display: flex; align-items: center; gap: 10px; }
+        
+        .stats { display: flex; gap: 25px; }
+        .stat-box { text-align: center; }
+        .stat-num { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .stat-label { font-size: 0.75rem; color: #aaa; text-transform: uppercase; }
 
-        .brand h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .stats-bar {
-            display: flex;
-            gap: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-val {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #818cf8;
-        }
-
-        .stat-lbl {
-            font-size: 0.75rem;
-            color: #9ca3af;
-            text-transform: uppercase;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            padding: 8px 16px;
+        .controls { display: flex; gap: 10px; }
+        
+        input, button {
+            padding: 8px 15px;
+            border-radius: 6px;
             border: 1px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.1);
             color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-1px);
-        }
-
-        button.active {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .search-container {
-            position: relative;
-        }
-
-        .search-container input {
-            padding: 8px 12px 8px 35px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.3);
-            color: white;
-            font-size: 0.9rem;
             outline: none;
-            width: 200px;
-            transition: width 0.3s;
+            cursor: pointer;
+            transition: 0.2s;
         }
+        input { cursor: text; width: 200px; }
+        button:hover, input:focus { background: rgba(255,255,255,0.2); border-color: var(--primary); }
 
-        .search-container input:focus {
-            width: 280px;
-            border-color: var(--primary-color);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        /* --- Visualization Area --- */
+        /* --- Infinite Canvas Area --- */
         #viewport {
             flex: 1;
             position: relative;
             overflow: hidden;
-            cursor: grab;
             background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-size: 30px 30px;
+            cursor: grab;
         }
-
-        #viewport:active {
-            cursor: grabbing;
-        }
+        #viewport:active { cursor: grabbing; }
 
         #world {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 0; left: 0;
             transform-origin: 0 0;
-            /* Transition is handled via JS for performance */
+            /* Start centered */
+            transform: translate(100px, 50%) scale(1); 
         }
 
-        /* SVG Lines Layer */
-        svg.connections {
+        /* --- Vertical Tree CSS --- */
+        /* Stack children vertically */
+        .tree ul {
+            display: flex;
+            flex-direction: column;
+            padding-left: 60px; /* Space for horizontal line */
+            position: relative;
+        }
+
+        .tree li {
+            position: relative;
+            padding-top: 30px; /* Vertical gap between siblings */
+            padding-left: 0;
+        }
+
+        /* The vertical line connecting siblings */
+        .tree li::before {
+            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 1px; /* Expanded by JS */
-            height: 1px; /* Expanded by JS */
-            overflow: visible;
-            pointer-events: none;
-            z-index: 1;
+            top: 0; bottom: 0; left: 0;
+            border-left: 2px solid var(--line-color);
+            width: 2px;
         }
 
-        path.link {
-            fill: none;
-            stroke: var(--line-color);
-            stroke-width: 2px;
-            transition: stroke 0.3s, stroke-width 0.3s;
-        }
-
-        path.link.highlighted {
-            stroke: var(--highlight-color);
-            stroke-width: 3px;
-            filter: drop-shadow(0 0 5px var(--highlight-color));
-        }
-
-        /* Nodes */
-        .node {
+        /* The horizontal line from the vertical spine to the node */
+        .tree li::after {
+            content: '';
             position: absolute;
-            width: var(--node-width);
-            height: var(--node-height);
+            top: 50%; left: 0;
+            width: 60px;
+            border-top: 2px solid var(--line-color);
+        }
+
+        /* Remove connectors for first/last to make it look like a tree branch */
+        .tree li:first-child::before { top: 50%; height: 50%; }
+        .tree li:last-child::before { bottom: 50%; height: 50%; }
+        .tree li:only-child::before, .tree li:only-child::after { display: none; }
+        
+        /* Fix the horizontal line height for center alignment */
+        .tree li::after { top: 35px; /* Half of approximate card height */ }
+        .tree li::before { top: -15px; } /* Adjust to connect nicely */
+
+        /* Root node adjustment */
+        .tree > ul { padding-left: 0; }
+        .tree > ul > li::before, .tree > ul > li::after { display: none; }
+
+        /* --- Node Card Design --- */
+        .node-card {
+            width: 220px;
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 10px;
+            padding: 12px;
             display: flex;
             align-items: center;
-            padding: 10px 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 2;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s, opacity 0.3s;
-            cursor: pointer;
-            border: 1px solid var(--card-border);
-        }
-
-        .node:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            border-color: var(--primary-color);
-            z-index: 10;
-        }
-
-        .node.dimmed {
-            opacity: 0.2;
-            filter: grayscale(100%);
-        }
-
-        .node-card-content {
-            display: flex;
-            align-items: center;
-            width: 100%;
             gap: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid transparent;
+            position: relative;
+            z-index: 10;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
 
-        /* Avatar Style */
+        .node-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.4);
+            border-color: var(--primary);
+        }
+
+        .node-card.highlight {
+            border: 2px solid #ffd700;
+            background: #fffbe6;
+        }
+
         .avatar {
-            width: 44px;
-            height: 44px;
+            width: 40px; height: 40px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -231,480 +162,206 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
-            border: 2px solid white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .node-info {
-            flex: 1;
-            overflow: hidden;
+        .info { flex: 1; overflow: hidden; }
+        .domain { 
+            font-weight: bold; 
+            color: var(--text-main); 
+            font-size: 0.9rem;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
         }
-
-        .node-url {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
-        }
-
-        .node-meta {
-            display: flex;
+        .meta { 
+            font-size: 0.75rem; 
+            color: var(--text-sub); 
+            display: flex; 
             justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            color: var(--text-sub);
+            margin-top: 4px;
         }
 
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 10px;
-            background: #eef2ff;
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .toggle-btn {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #f3f4f6;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-
-        .toggle-btn:hover {
-            background: var(--primary-color);
+        /* Expand/Collapse Button */
+        .toggler {
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px; height: 24px;
+            background: var(--primary);
             color: white;
-        }
-
-        .node.has-children .toggle-btn {
-            display: flex;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        .node:not(.has-children) .toggle-btn {
-            display: none;
-        }
+        /* Hide Logic */
+        .hidden { display: none !important; }
 
-        /* Toast Notification */
-        #toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        #toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        /* Instructions Overlay */
-        .instructions {
+        /* Instructions */
+        .overlay-ui {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 8px;
+            bottom: 20px; left: 20px;
+            color: rgba(255,255,255,0.5);
             font-size: 0.8rem;
-            color: rgba(255,255,255,0.7);
             pointer-events: none;
         }
-
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #818cf8;">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-            <h1>Crawler<span style="font-weight: 300; opacity: 0.8;">Viz</span></h1>
+        <div class="title">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Crawler Map
         </div>
-
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-val" id="stat-pages">0</div>
-                <div class="stat-lbl">Pages</div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-num" id="s-pages">0</div>
+                <div class="stat-label">Pages</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-val" id="stat-links">0</div>
-                <div class="stat-lbl">Links</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-val" id="stat-depth">0</div>
-                <div class="stat-lbl">Depth</div>
+            <div class="stat-box">
+                <div class="stat-num" id="s-depth">0</div>
+                <div class="stat-label">Depth</div>
             </div>
         </div>
 
         <div class="controls">
-            <div class="search-container">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Find URL...">
-            </div>
+            <input type="text" id="searchInput" placeholder="Search domain...">
             <button onclick="app.resetView()">Reset View</button>
-            <button onclick="app.expandAll()">Expand All</button>
-            <button onclick="app.collapseAll()">Collapse All</button>
+            <button onclick="app.expandAll()">Expand</button>
+            <button onclick="app.collapseAll()">Collapse</button>
         </div>
     </header>
 
     <div id="viewport">
         <div id="world">
-            <svg class="connections" id="svgLayer"></svg>
-            <div id="nodeLayer"></div>
+            <div class="tree" id="treeRoot"></div>
         </div>
-        <div class="instructions">
-            Drag to Pan • Scroll to Zoom • Click Node to Toggle
-        </div>
+        <div class="overlay-ui">Drag to Move • Scroll to Zoom • Click to Expand</div>
     </div>
 
-    <div id="toast">Message</div>
-
     <script>
-        // --- Data ---
-        const crawlData = {
+        const data = {
             url: "https://example.com",
             links: [
-                {
-                    url: "https://example.com/about",
-                    links: [
-                        {
-                            url: "https://example.com/about/team",
-                            links: [
-                                { url: "https://example.com/about/team/john", links: [] },
-                                { url: "https://example.com/about/team/jane", links: [] },
-                                { url: "https://example.com/about/team/careers", links: [] }
-                            ]
-                        },
-                        {
-                            url: "https://example.com/about/history",
-                            links: [
-                                { url: "https://example.com/about/history/2020", links: [] },
-                                { url: "https://example.com/about/history/2021", links: [] }
-                            ]
-                        },
-                        { url: "https://example.com/about/contact", links: [] }
-                    ]
-                },
-                {
-                    url: "https://example.com/products",
-                    links: [
-                        {
-                            url: "https://example.com/products/software",
-                            links: [
-                                { url: "https://example.com/products/software/app1", links: [] },
-                                { url: "https://example.com/products/software/app2", links: [] },
-                                { url: "https://example.com/products/software/app3", links: [] }
-                            ]
-                        },
-                        {
-                            url: "https://example.com/products/hardware",
-                            links: [
-                                { url: "https://example.com/products/hardware/device1", links: [] },
-                                { url: "https://example.com/products/hardware/device2", links: [] }
-                            ]
-                        },
-                        { url: "https://example.com/products/pricing", links: [] }
-                    ]
-                },
-                {
-                    url: "https://example.com/blog",
-                    links: [
-                        {
-                            url: "https://example.com/blog/2024",
-                            links: [
-                                { url: "https://example.com/blog/2024/january", links: [] },
-                                { url: "https://example.com/blog/2024/february", links: [] },
-                                { url: "https://example.com/blog/2024/march", links: [] }
-                            ]
-                        },
-                        { url: "https://example.com/blog/categories", links: [] },
-                        { url: "https://example.com/blog/authors", links: [] }
-                    ]
-                },
-                {
-                    url: "https://example.com/support",
-                    links: [
-                        { url: "https://example.com/support/faq", links: [] },
-                        { url: "https://example.com/support/docs", links: [] },
-                        { url: "https://example.com/support/contact", links: [] }
-                    ]
-                }
+                { url: "https://example.com/about", links: [
+                    { url: "https://example.com/about/team", links: [] },
+                    { url: "https://example.com/about/history", links: [] }
+                ]},
+                { url: "https://example.com/products", links: [
+                    { url: "https://example.com/products/software", links: [] },
+                    { url: "https://example.com/products/hardware", links: [] }
+                ]},
+                { url: "https://example.com/blog", links: [
+                    { url: "https://example.com/blog/news", links: [] },
+                    { url: "https://example.com/blog/archive", links: [] }
+                ]}
             ]
         };
 
-        // --- Configuration ---
-        const CONFIG = {
-            nodeWidth: 220,
-            nodeHeight: 80,
-            verticalGap: 100,
-            horizontalGap: 20
-        };
+        // Add more data for testing depth
+        data.links[0].links.push({ url: "https://example.com/about/contact", links: [] });
+        data.links[1].links[0].links = [
+            { url: "https://example.com/products/software/app1", links: [] },
+            { url: "https://example.com/products/software/app2", links: [] }
+        ];
 
-        // --- Application Logic ---
-        class CrawlerApp {
-            constructor(data) {
-                this.data = JSON.parse(JSON.stringify(data)); // Deep copy
+        class App {
+            constructor() {
                 this.viewport = document.getElementById('viewport');
                 this.world = document.getElementById('world');
-                this.svgLayer = document.getElementById('svgLayer');
-                this.nodeLayer = document.getElementById('nodeLayer');
-                this.searchInput = document.getElementById('searchInput');
+                this.treeRoot = document.getElementById('treeRoot');
                 
-                // View state
+                // State
                 this.scale = 1;
                 this.panning = false;
-                this.pointX = 0;
-                this.pointY = 0;
+                this.pointX = 100; // Start a bit to the right
+                this.pointY = window.innerHeight / 2;
                 this.startX = 0;
                 this.startY = 0;
-                
-                // Tree layout state
-                this.nodes = [];
-                this.links = [];
-                
+
                 this.init();
             }
 
             init() {
-                this.processData(this.data);
-                this.updateStats();
+                this.updateStats(data);
+                this.renderTree(data, this.treeRoot);
                 this.setupInteractions();
-                this.centerView();
-                this.render();
+                this.centerRoot();
+            }
+
+            getDomain(url) {
+                try { return new URL(url).hostname; } catch { return url; }
+            }
+
+            getInitials(url) { return this.getDomain(url).charAt(0).toUpperCase(); }
+
+            renderTree(nodeData, container) {
+                const ul = document.createElement('ul');
+                const li = document.createElement('li');
                 
-                // Listen to search
-                this.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
-            }
-
-            // Add helper properties to data (id, collapsed state, x, y)
-            processData(node, depth = 0, parentId = null) {
-                node.id = Math.random().toString(36).substr(2, 9);
-                node.depth = depth;
-                node.collapsed = depth > 1; // Auto-collapse deeper levels for initial clean look
-                node.parentId = parentId;
-                node.x = 0;
-                node.y = 0;
+                // Create Card
+                const hasChildren = nodeData.links && nodeData.links.length > 0;
+                const card = document.createElement('div');
+                card.className = 'node-card';
+                card.dataset.url = nodeData.url;
                 
-                this.nodes.push(node);
+                const color = `hsl(${this.getDomain(nodeData.url).length * 40}, 70%, 60%)`;
 
-                if (node.links) {
-                    node.links.forEach(child => {
-                        this.links.push({ source: node.id, target: child.id });
-                        this.processData(child, depth + 1, node.id);
-                    });
-                }
-            }
-
-            // --- Layout Engine (Tree Algorithm) ---
-            calculateLayout() {
-                // 1. Reset dimensions
-                this.nodes.forEach(n => {
-                    n.width = CONFIG.nodeWidth;
-                    // If collapsed, children don't take space
-                    if (n.collapsed) n._visibleChildren = [];
-                    else n._visibleChildren = n.links || [];
-                });
-
-                // 2. Recursive function to assign X and Y
-                // Post-order traversal to calculate width
-                const calculateSubtreeWidth = (node) => {
-                    if (node._visibleChildren.length === 0) {
-                        node.subtreeWidth = CONFIG.nodeWidth + CONFIG.horizontalGap;
-                        return;
-                    }
-                    
-                    node.subtreeWidth = 0;
-                    node._visibleChildren.forEach(child => {
-                        calculateSubtreeWidth(child);
-                        node.subtreeWidth += child.subtreeWidth;
-                    });
-                };
-
-                // Pre-order traversal to assign positions
-                const assignCoordinates = (node, x, y) => {
-                    node.x = x + node.subtreeWidth / 2 - CONFIG.nodeWidth / 2;
-                    node.y = y;
-
-                    let currentX = x;
-                    node._visibleChildren.forEach(child => {
-                        assignCoordinates(child, currentX, y + CONFIG.nodeHeight + CONFIG.verticalGap);
-                        currentX += child.subtreeWidth;
-                    });
-                };
-
-                // Start calculation from root
-                calculateSubtreeWidth(this.data);
-                assignCoordinates(this.data, 0, 0);
-
-                // Adjust to make sure everything is centered around 0,0 relative to world
-                const rootCenter = this.data.x + CONFIG.nodeWidth / 2;
-                this.nodes.forEach(n => {
-                    n.x -= rootCenter;
-                });
-            }
-
-            // --- Rendering ---
-            render() {
-                this.calculateLayout();
-                this.nodeLayer.innerHTML = '';
-                this.svgLayer.innerHTML = '';
-
-                // Render Links
-                this.links.forEach(link => {
-                    const sourceNode = this.nodes.find(n => n.id === link.source);
-                    const targetNode = this.nodes.find(n => n.id === link.target);
-
-                    // Don't draw if target is hidden (parent collapsed)
-                    if (sourceNode.collapsed) return;
-
-                    const startX = sourceNode.x + CONFIG.nodeWidth / 2;
-                    const startY = sourceNode.y + CONFIG.nodeHeight;
-                    const endX = targetNode.x + CONFIG.nodeWidth / 2;
-                    const endY = targetNode.y;
-
-                    // Bezier Curve
-                    const controlY1 = startY + CONFIG.verticalGap / 2;
-                    const controlY2 = endY - CONFIG.verticalGap / 2;
-                    
-                    const pathData = `M ${startX} ${startY} C ${startX} ${controlY1}, ${endX} ${controlY2}, ${endX} ${endY}`;
-
-                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    path.setAttribute("d", pathData);
-                    path.setAttribute("class", "link");
-                    path.dataset.source = sourceNode.id;
-                    path.dataset.target = targetNode.id;
-                    this.svgLayer.appendChild(path);
-                });
-
-                // Render Nodes
-                this.nodes.forEach(node => {
-                    // Don't render if parent is collapsed
-                    if (node.parentId) {
-                        const parent = this.nodes.find(n => n.id === node.parentId);
-                        if (parent && parent.collapsed) return;
-                    }
-
-                    const el = document.createElement('div');
-                    el.className = `node ${node.links && node.links.length > 0 ? 'has-children' : ''}`;
-                    if (node.collapsed) el.classList.add('collapsed');
-                    el.style.transform = `translate(${node.x}px, ${node.y}px)`;
-                    el.dataset.id = node.id;
-                    el.dataset.url = node.url.toLowerCase();
-
-                    // Get first letter for avatar
-                    const domain = new URL(node.url).hostname;
-                    const letter = domain.charAt(0).toUpperCase();
-                    
-                    // Random pastel color for avatar based on domain char code
-                    const hue = domain.charCodeAt(0) * 13 % 360;
-                    const avatarColor = `hsl(${hue}, 70%, 60%)`;
-
-                    el.innerHTML = `
-                        <div class="node-card-content">
-                            <div class="avatar" style="background: ${avatarColor}">${letter}</div>
-                            <div class="node-info">
-                                <div class="node-url" title="${node.url}">${domain}</div>
-                                <div class="node-meta">
-                                    <span>Lvl ${node.depth}</span>
-                                    <span class="status-badge">${node.links ? node.links.length : 0} Links</span>
-                                </div>
-                            </div>
-                            <div class="toggle-btn">
-                                ${node.collapsed ? '+' : '-'}
-                            </div>
+                card.innerHTML = `
+                    <div class="avatar" style="background: ${color}">${this.getInitials(nodeData.url)}</div>
+                    <div class="info">
+                        <div class="domain" title="${nodeData.url}">${this.getDomain(nodeData.url)}</div>
+                        <div class="meta">
+                            <span>${hasChildren ? nodeData.links.length + ' items' : 'Leaf'}</span>
                         </div>
-                    `;
+                    </div>
+                    ${hasChildren ? '<div class="toggler">-</div>' : ''}
+                `;
 
-                    // Click Interaction
-                    el.onclick = (e) => {
-                        e.stopPropagation(); // Prevent drag start
-                        this.toggleNode(node);
-                    };
+                // Toggle Logic
+                card.onclick = (e) => {
+                    e.stopPropagation(); // Stop drag
+                    if (hasChildren) {
+                        const childUl = li.querySelector('ul');
+                        const tog = card.querySelector('.toggler');
+                        if (childUl) {
+                            if (childUl.classList.contains('hidden')) {
+                                childUl.classList.remove('hidden');
+                                tog.textContent = '-';
+                            } else {
+                                childUl.classList.add('hidden');
+                                tog.textContent = '+';
+                            }
+                        }
+                    }
+                };
 
-                    this.nodeLayer.appendChild(el);
-                });
-                
-                // Adjust SVG size
-                const bounds = this.getWorldBounds();
-                this.svgLayer.style.width = (bounds.width + 500) + 'px';
-                this.svgLayer.style.height = (bounds.height + 500) + 'px';
-                this.svgLayer.style.transform = `translate(${-bounds.x - 250}px, ${-bounds.y - 250}px)`;
+                li.appendChild(card);
+
+                // Render Children
+                if (hasChildren) {
+                    const childrenUl = document.createElement('ul');
+                    // Collapse deeper levels initially
+                    if (nodeData.depth > 0) childrenUl.classList.add('hidden');
+
+                    nodeData.links.forEach(child => {
+                        child.depth = (nodeData.depth || 0) + 1;
+                        this.renderTree(child, childrenUl);
+                    });
+                    li.appendChild(childrenUl);
+                }
+
+                ul.appendChild(li);
+                container.appendChild(ul);
             }
 
-            toggleNode(node) {
-                if (!node.links || node.links.length === 0) return;
-                
-                node.collapsed = !node.collapsed;
-                this.render();
-                this.handleSearch(this.searchInput.value); // Re-apply search if active
-            }
-
-            expandAll() {
-                this.nodes.forEach(n => n.collapsed = false);
-                this.render();
-                this.handleSearch(this.searchInput.value);
-                this.showToast("Expanded all nodes");
-            }
-
-            collapseAll() {
-                this.nodes.forEach(n => {
-                    if (n.depth > 0) n.collapsed = true;
-                });
-                this.render();
-                this.showToast("Collapsed all nodes");
-            }
-
-            getWorldBounds() {
-                if (this.nodes.length === 0) return { x:0, y:0, width:0, height:0 };
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                this.nodes.forEach(n => {
-                    if (n.x < minX) minX = n.x;
-                    if (n.y < minY) minY = n.y;
-                    if (n.x + CONFIG.nodeWidth > maxX) maxX = n.x + CONFIG.nodeWidth;
-                    if (n.y + CONFIG.nodeHeight > maxY) maxY = n.y + CONFIG.nodeHeight;
-                });
-                return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
-            }
-
-            // --- Interactions (Pan & Zoom) ---
             setupInteractions() {
-                // Zoom
-                this.viewport.addEventListener('wheel', (e) => {
-                    e.preventDefault();
-                    const xs = (e.clientX - this.pointX) / this.scale;
-                    const ys = (e.clientY - this.pointY) / this.scale;
-                    const delta = -e.deltaY;
-                    
-                    (delta > 0) ? (this.scale *= 1.1) : (this.scale /= 1.1);
-                    
-                    this.pointX = e.clientX - xs * this.scale;
-                    this.pointY = e.clientY - ys * this.scale;
-                    
-                    this.updateTransform();
-                }, { passive: false });
-
                 // Pan
                 this.viewport.addEventListener('mousedown', (e) => {
                     this.panning = true;
@@ -725,162 +382,123 @@
                     this.panning = false;
                     this.viewport.style.cursor = 'grab';
                 });
+
+                // Zoom
+                this.viewport.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const xs = (e.clientX - this.pointX) / this.scale;
+                    const ys = (e.clientY - this.pointY) / this.scale;
+                    const delta = -e.deltaY;
+                    
+                    (delta > 0) ? (this.scale *= 1.1) : (this.scale /= 1.1);
+                    
+                    this.pointX = e.clientX - xs * this.scale;
+                    this.pointY = e.clientY - ys * this.scale;
+                    
+                    this.updateTransform();
+                }, { passive: false });
             }
 
             updateTransform() {
                 this.world.style.transform = `translate(${this.pointX}px, ${this.pointY}px) scale(${this.scale})`;
             }
 
-            centerView() {
-                const vw = this.viewport.clientWidth;
-                const vh = this.viewport.clientHeight;
-                
-                // Reset scale slightly
+            centerRoot() {
+                this.pointX = 50; 
+                this.pointY = this.viewport.clientHeight / 2 - 50;
                 this.scale = 1;
-                // Center roughly
-                this.pointX = vw / 2 - (this.data.x + CONFIG.nodeWidth/2); // Center Root
-                this.pointY = 50; // Padding from top
-                
                 this.updateTransform();
             }
-            
+
             resetView() {
-                this.searchInput.value = '';
-                this.handleSearch('');
-                this.centerView();
-                this.showToast("View Reset");
+                this.centerRoot();
+                document.getElementById('searchInput').value = '';
+                this.clearHighlights();
+                this.expandAll();
+                this.collapseLevel(1); // Reset to level 1 open
             }
 
-            // --- Search ---
-            handleSearch(term) {
-                const cleanTerm = term.toLowerCase();
-                const allNodes = document.querySelectorAll('.node');
-                const allLinks = document.querySelectorAll('.link');
+            expandAll() {
+                document.querySelectorAll('ul').forEach(u => u.classList.remove('hidden'));
+                document.querySelectorAll('.toggler').forEach(t => t.textContent = '-');
+            }
 
-                // Reset visual states
-                allNodes.forEach(n => {
-                    n.classList.remove('dimmed');
-                    n.querySelector('.node-url').innerHTML = n.dataset.url; // Reset text
+            collapseAll() {
+                // Keep root visible, hide everything else
+                const allUls = Array.from(document.querySelectorAll('ul'));
+                allUls.forEach((u, i) => {
+                    if (i > 1) u.classList.add('hidden'); // index 0 is root wrapper, 1 is root's children
                 });
-                allLinks.forEach(l => l.classList.remove('highlighted'));
+                document.querySelectorAll('.toggler').forEach(t => t.textContent = '+');
+            }
 
-                if (!cleanTerm) return;
-
-                let matchFound = false;
-                let firstMatchNode = null;
-
-                this.nodes.forEach(node => {
-                    // Check URL match
-                    if (node.url.toLowerCase().includes(cleanTerm)) {
-                        matchFound = true;
-                        if (!firstMatchNode) firstMatchNode = node;
-
-                        // Expand parents
-                        let curr = node;
-                        while(curr.parentId) {
-                            const parent = this.nodes.find(n => n.id === curr.parentId);
-                            if (parent) {
-                                parent.collapsed = false;
-                                // Highlight link to this child
-                                const link = document.querySelector(`.link[data-source="${parent.id}"][data-target="${curr.id}"]`);
-                                if (link) link.classList.add('highlighted');
-                                curr = parent;
-                            } else {
-                                break;
-                            }
-                        }
-                        
-                        // Re-render might be needed if we expanded parents, but let's try visual only first for performance
-                        // Actually, if we expanded parents, we MUST re-render to show the hidden nodes
-                        // So we break, do logic, then render once.
-                    }
-                });
-
-                if (matchFound) {
-                    this.render(); // Render the newly expanded nodes
-                    
-                    // Now apply highlights to the DOM elements
-                    const domNodes = Array.from(document.querySelectorAll('.node'));
-                    domNodes.forEach(el => {
-                        const url = el.dataset.url;
-                        if (url.includes(cleanTerm)) {
-                            // Highlight text
-                            const urlEl = el.querySelector('.node-url');
-                            const regex = new RegExp(`(${cleanTerm})`, 'gi');
-                            urlEl.innerHTML = url.replace(regex, '<span style="background:var(--highlight-color); color:black; padding:0 2px;">$1</span>');
-                        } else {
-                            // Check if this node is an ancestor of a match or a match itself
-                            // Simple heuristic: if it's not a match, dim it
-                            // But we need to keep the path visible.
-                            // A simpler approach for the visualizer: Dim everything that isn't a match or a parent of a match.
-                            // For now, let's just dim non-matches.
-                             // el.classList.add('dimmed'); 
-                        }
+            collapseLevel(level) {
+                // Custom helper to collapse everything below level X
+                // Simple implementation: just collapse all deeper than 0
+                const rootUl = this.treeRoot.querySelector('ul');
+                if(rootUl) {
+                    // Keep root's children visible
+                    Array.from(rootUl.children).forEach(li => {
+                        const subUl = li.querySelector('ul');
+                        if(subUl) subUl.classList.add('hidden');
+                        const tog = li.querySelector('.toggler');
+                        if(tog) tog.textContent = '+';
                     });
-                    
-                    // Highlight lines again after re-render
-                    this.nodes.forEach(node => {
-                        if (node.url.toLowerCase().includes(cleanTerm)) {
-                            let curr = node;
-                            while(curr.parentId) {
-                                const parent = this.nodes.find(n => n.id === curr.parentId);
-                                if (parent) {
-                                    const link = document.querySelector(`.link[data-source="${parent.id}"][data-target="${curr.id}"]`);
-                                    if (link) {
-                                        link.classList.add('highlighted');
-                                        // Ensure parent is not dimmed
-                                        const parentEl = document.querySelector(`.node[data-id="${parent.id}"]`);
-                                        if(parentEl) parentEl.classList.remove('dimmed');
-                                    }
-                                    curr = parent;
-                                } else break;
-                            }
-                            // Ensure match is not dimmed
-                            const el = document.querySelector(`.node[data-id="${node.id}"]`);
-                            if(el) el.classList.remove('dimmed');
-                        }
-                    });
-
-                    // Dim all nodes that are not part of a highlighted path
-                    const highlightedLinks = document.querySelectorAll('.link.highlighted');
-                    const connectedNodeIds = new Set();
-                    highlightedLinks.forEach(l => {
-                        connectedNodeIds.add(l.dataset.source);
-                        connectedNodeIds.add(l.dataset.target);
-                    });
-
-                    document.querySelectorAll('.node').forEach(n => {
-                        if (!connectedNodeIds.has(n.dataset.id)) {
-                            n.classList.add('dimmed');
-                        }
-                    });
-
-                } else {
-                     // No matches found - optional feedback
                 }
             }
 
-            // --- Stats ---
-            updateStats() {
-                const countPages = (n) => 1 + (n.links ? n.links.reduce((acc, c) => acc + countPages(c), 0) : 0);
-                const countLinks = (n) => (n.links ? n.links.length + n.links.reduce((acc, c) => acc + countLinks(c), 0) : 0);
-                const getDepth = (n, d) => !n.links || n.links.length === 0 ? d : Math.max(...n.links.map(c => getDepth(c, d+1)));
-
-                document.getElementById('stat-pages').innerText = countPages(this.data);
-                document.getElementById('stat-links').innerText = countLinks(this.data);
-                document.getElementById('stat-depth').innerText = getDepth(this.data, 0);
+            clearHighlights() {
+                document.querySelectorAll('.node-card').forEach(c => c.classList.remove('highlight'));
             }
 
-            showToast(msg) {
-                const t = document.getElementById('toast');
-                t.textContent = msg;
-                t.classList.add('show');
-                setTimeout(() => t.classList.remove('show'), 2000);
+            search(term) {
+                this.clearHighlights();
+                term = term.toLowerCase();
+                if(!term) return;
+
+                document.querySelectorAll('.node-card').forEach(card => {
+                    const url = card.dataset.url.toLowerCase();
+                    if(url.includes(term)) {
+                        card.classList.add('highlight');
+                        
+                        // Traverse up to expand parents
+                        let parent = card.parentElement; // li
+                        while(parent && parent.tagName === 'LI') {
+                            const grandParentUl = parent.parentElement; // ul
+                            if(grandParentUl) {
+                                grandParentUl.classList.remove('hidden');
+                                const grandParentLi = grandParentUl.parentElement; // li
+                                if(grandParentLi) {
+                                    const gpCard = grandParentLi.querySelector('.node-card');
+                                    const gpTog = grandParentLi.querySelector('.toggler');
+                                    if(gpCard) gpCard.classList.remove('highlight'); // Don't highlight parents path, just keep them visible
+                                    if(gpTog) gpTog.textContent = '-';
+                                }
+                            }
+                            parent = grandParentLi ? grandParentLi.parentElement : null;
+                        }
+                    }
+                });
+            }
+
+            updateStats(node) {
+                let count = 0;
+                let depth = 0;
+                const traverse = (n, d) => {
+                    count++;
+                    if(d > depth) depth = d;
+                    if(n.links) n.links.forEach(c => traverse(c, d+1));
+                }
+                traverse(node, 0);
+                document.getElementById('s-pages').innerText = count;
+                document.getElementById('s-depth').innerText = depth;
             }
         }
 
-        // Initialize App
-        const app = new CrawlerApp(crawlData);
+        const app = new App();
+        
+        // Bind Search
+        document.getElementById('searchInput').addEventListener('input', (e) => app.search(e.target.value));
 
     </script>
 </body>
