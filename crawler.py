@@ -57,6 +57,7 @@ def crawl_website(start_url, max_pages=None):
     queue = deque([start_normalized])
     visited = set()
     pages = {}
+    errors = {}
     pages_crawled = 0
     attempts = 0
 
@@ -108,10 +109,22 @@ def crawl_website(start_url, max_pages=None):
             pages_crawled += 1
             time.sleep(0.5)
 
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response is not None else 0
+            errors[current_url] = f"HTTP {status}"
+            print(f"  -> [{status}] {current_url}")
+        except requests.exceptions.ConnectionError:
+            errors[current_url] = "connection error"
+            print(f"  -> [CONNECTION ERROR] {current_url}")
+        except requests.exceptions.Timeout:
+            errors[current_url] = "timeout"
+            print(f"  -> [TIMEOUT] {current_url}")
         except requests.exceptions.RequestException as e:
+            errors[current_url] = str(e)[:50]
             print(f"  -> Failed: {e}")
         except Exception as e:
+            errors[current_url] = str(e)[:50]
             print(f"  -> Error: {e}")
 
     print(f"\nDone. Successfully crawled {pages_crawled} page(s).")
-    return pages, base_domain
+    return pages, errors, base_domain

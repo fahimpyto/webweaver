@@ -28,8 +28,8 @@ if __name__ == '__main__':
     max_input = input("Max pages (Enter for unlimited): ").strip()
     max_pages = int(max_input) if max_input else None
 
-    pages, domain = crawl_website(start_url, max_pages)
-    tree = build_tree(pages, start_url)
+    pages, errors, domain = crawl_website(start_url, max_pages)
+    tree = build_tree(pages, start_url, errors)
     domain_name = get_domain_name(start_url)
 
     tree_file = f"{domain_name}.html"

@@ -49,6 +49,7 @@ class PageNode:
         self.emoji = '\U0001f4c4'
         self.children = []
         self.crawled = True
+        self.error = ''
 
     def add_child(self, node):
         self.children.append(node)
@@ -70,6 +71,7 @@ class PageNode:
             'emoji': self.emoji,
             'child_count': self.child_count,
             'crawled': self.crawled,
+            'error': self.error,
             'children': [c.to_dict() for c in self.children],
         }
 
@@ -90,7 +92,9 @@ def _find_path_parent(url, all_urls, start_url):
     return start_url
 
 
-def build_tree(pages, start_url):
+def build_tree(pages, start_url, errors=None):
+    if errors is None:
+        errors = {}
     all_urls = {start_url}
     for url, data in pages.items():
         all_urls.add(url)
@@ -125,6 +129,7 @@ def build_tree(pages, start_url):
         node = PageNode(url, title, depth=parent.depth + 1)
         node.emoji = get_emoji(parsed.path)
         node.crawled = is_crawled
+        node.error = errors.get(url, '')
         parent.add_child(node)
         all_nodes[url] = node
 

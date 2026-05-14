@@ -5,37 +5,32 @@ from jinja2 import Environment, FileSystemLoader
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
 
-def _count_nodes(node):
-    crawled = 1 if node.crawled else 0
-    discovered = 1
+def _tree_stats(node):
+    total = 1
+    ok_count = 1 if node.crawled else 0
+    err_count = 0 if node.crawled else 1
+    max_depth = node.depth
     for child in node.children:
-        c, d = _count_nodes(child)
-        crawled += c
-        discovered += d
-    return crawled, discovered
-
-def _max_tree_depth(node, depth=0):
-    if not node.children:
-        return depth
-    return max(_max_tree_depth(child, depth + 1) for child in node.children)
+        t, o, e, d = _tree_stats(child)
+        total += t
+        ok_count += o
+        err_count += e
+        max_depth = max(max_depth, d)
+    return total, ok_count, err_count, max_depth
 
 
 def generate_html(tree, domain):
-    crawled, discovered = _count_nodes(tree)
-    depth = _max_tree_depth(tree)
+    total_pages, ok_count, err_count, max_depth = _tree_stats(tree)
 
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = env.get_template('output.html')
 
-    stats = {
-        'crawled': crawled,
-        'discovered': discovered,
-        'depth': depth,
-    }
-
     html = template.render(
         domain=domain,
         tree=tree.to_dict(),
-        stats=stats,
+        total_pages=total_pages,
+        ok_count=ok_count,
+        err_count=err_count,
+        max_depth=max_depth,
     )
     return html

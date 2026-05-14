@@ -10,18 +10,21 @@ def _walk(node):
         yield from _walk(child)
 
 
+def _count(node):
+    return 1 + sum(_count(c) for c in node.children)
+
+
 def generate_graph(pages, tree_root, domain):
     G = nx.DiGraph()
 
     all_nodes = list(_walk(tree_root))
-    url_set = {n.url for n in all_nodes}
 
     for n in all_nodes:
         G.add_node(n.url)
 
     for url, data in pages.items():
         for link in data.get('links', []):
-            if link in url_set:
+            if G.has_node(link):
                 G.add_edge(url, link)
 
     def _connect_tree(node):
@@ -31,65 +34,78 @@ def generate_graph(pages, tree_root, domain):
             _connect_tree(child)
     _connect_tree(tree_root)
 
-    net = Network(height="800px", width="100%", bgcolor="#0f172a", font_color="#f8fafc")
+    net = Network(height="900px", width="100%", bgcolor="#ffffff", font_color="#1e293b")
 
     for n in all_nodes:
         is_crawled = n.crawled
-        color = (
-            {'border': '#059669', 'background': '#34d399'}
-            if is_crawled
-            else {'border': '#d97706', 'background': '#fbbf24'}
-        )
-        deg = G.degree(n.url)
-        size = min(max(deg * 5, 16), 50)
+        if is_crawled:
+            color = {'border': '#059669', 'background': '#d1fae5'}
+            text_color = '#065f46'
+        else:
+            color = {'border': '#d97706', 'background': '#fef3c7'}
+            text_color = '#92400e'
+
         parsed = urlparse(n.url)
         path = parsed.path.rstrip('/')
-        label = (
-            path.split('/')[-1].replace('-', ' ').replace('_', ' ').title()[:18]
-            if path
-            else 'Home'
-        )
-        title = f"<b>{n.title}</b><br><small>{n.url}</small>"
+        label = (path.split('/')[-1].replace('-', ' ').replace('_', ' ').title()[:20]
+                 if path else 'Home')
+
+        subtree_size = _count(n)
+        size = min(max(subtree_size * 3, 20), 60)
+
+        tooltip = f"<b>{n.title}</b><br><small>{n.url}</small>"
         if not n.crawled:
-            title += "<br><span style='color:#f59e0b'>\u2716 not crawled</span>"
+            reason = n.error if n.error else "not accessible"
+            tooltip += f"<br><span style='color:#d97706'>\u2716 {reason}</span>"
+
         net.add_node(
             n.url,
             label=label,
-            title=title,
+            title=tooltip,
             color=color,
             size=size,
-            font={'size': 11, 'face': 'sans-serif'},
+            font={'size': 11, 'face': 'Inter, -apple-system, sans-serif', 'color': text_color},
+            shape='dot',
             borderWidth=2,
         )
 
     for u, v in G.edges():
+        is_link = u in pages and v in pages[u].get('links', [])
         net.add_edge(
             u, v,
-            color='rgba(148,163,184,0.35)',
-            width=1,
-            arrows={'to': {'enabled': True, 'scaleFactor': 0.4}},
+            color='#cbd5e1' if is_link else '#e2e8f0',
+            width=1.2 if is_link else 0.6,
+            arrows={'to': {'enabled': True, 'scaleFactor': 0.3}},
+            dashes=not is_link,
         )
 
     net.set_options("""
 var options = {
-  "nodes": { "shape": "dot" },
-  "edges": { "smooth": { "type": "continuous" } },
-  "physics": {
-    "enabled": true,
-    "stabilization": { "iterations": 200 },
-    "solver": "forceAtlas2Based",
-    "forceAtlas2Based": {
-      "gravitationalConstant": -60,
-      "springConstant": 0.03,
-      "springLength": 130
+  "layout": {
+    "hierarchical": {
+      "enabled": true,
+      "direction": "UD",
+      "sortMethod": "directed",
+      "nodeSpacing": 180,
+      "treeSpacing": 220,
+      "levelSeparation": 160,
+      "blockShifting": true,
+      "edgeMinimization": true,
+      "parentCentralization": true
     }
   },
+  "physics": { "enabled": false },
+  "edges": {
+    "smooth": { "type": "cubicBezier", "forceDirection": "vertical" }
+  },
   "interaction": {
+    "dragNodes": true,
+    "zoomView": true,
     "hover": true,
-    "tooltipDelay": 100,
-    "navigationButtons": true,
-    "keyboard": true
-  }
+    "tooltipDelay": 150,
+    "navigationButtons": true
+  },
+  "configure": { "enabled": false }
 }
     """)
 

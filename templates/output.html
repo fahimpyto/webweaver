@@ -6,82 +6,83 @@
 <title>{{ domain }} — Site Map</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#f0f2f5;--surface:#fff;--border:#e2e8f0;--text:#1a202c;--text-secondary:#64748b;--accent:#6366f1;--accent-light:#eef2ff;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06)}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.app{max-width:1400px;margin:0 auto;padding:20px}
+:root{--slate-50:#f8fafc;--slate-100:#f1f5f9;--slate-200:#e2e8f0;--slate-300:#cbd5e1;--slate-400:#94a3b8;--slate-500:#64748b;--slate-600:#475569;--slate-700:#334155;--slate-800:#1e293b;--slate-900:#0f172a;--green-500:#22c55e;--green-100:#dcfce7;--amber-500:#f59e0b;--amber-100:#fef3c7;--red-500:#ef4444;--red-100:#fee2e2}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--slate-50);color:var(--slate-900);min-height:100vh}
+.app{max-width:1200px;margin:0 auto;padding:24px}
 
 /* Header */
-.header{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 28px;margin-bottom:24px}
-.header-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px}
-.domain{font-size:1.3rem;font-weight:700;color:var(--text)}
-.stats{display:flex;gap:16px}
-.stat{padding:6px 14px;background:var(--accent-light);border-radius:8px;font-size:.85rem;color:var(--accent);font-weight:600}
-.stat-ok{background:#ecfdf5;color:#059669}
-.stat-muted{background:#f1f5f9;color:#64748b}
-.controls{display:flex;gap:10px;flex-wrap:wrap}
-.search-wrap{position:relative;flex:1;min-width:200px}
-.search-wrap input{width:100%;padding:9px 14px 9px 36px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;outline:0;transition:border-color .2s}
-.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
-.search-wrap .icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:1rem}
-.btn{padding:9px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;font-size:.85rem;font-weight:500;color:var(--text);transition:all .15s}
-.btn:hover{background:#f8fafc;border-color:#cbd5e0}
+.header{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:24px 28px;margin-bottom:20px}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:16px}
+.domain{font-size:1.1rem;font-weight:700;color:var(--slate-900)}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{font-size:.8rem;padding:4px 10px;border-radius:6px;font-weight:600;border:1px solid var(--slate-200)}
+.stat-ok{background:var(--green-100);color:#15803d;border-color:#86efac}
+.stat-err{background:var(--red-100);color:#b91c1c;border-color:#fca5a5}
+.stat-neutral{background:var(--slate-100);color:var(--slate-600);border-color:var(--slate-200)}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:180px}
+.search-wrap input{width:100%;padding:7px 12px 7px 32px;border:1px solid var(--slate-200);border-radius:6px;font-size:.85rem;outline:0;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--slate-400)}
+.search-wrap .icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--slate-400);font-size:.85rem}
+.btn{padding:7px 14px;border:1px solid var(--slate-200);border-radius:6px;background:#fff;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--slate-600);transition:all .1s}
+.btn:hover{background:var(--slate-50);border-color:var(--slate-300)}
+
+/* Report summary */
+.report-bar{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--slate-100);flex-wrap:wrap}
+.report-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--slate-600)}
+.report-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.report-dot.green{background:var(--green-500)}
+.report-dot.amber{background:var(--amber-500)}
+.report-dot.red{background:var(--red-500)}
+.report-num{font-weight:700;color:var(--slate-800);margin-right:2px}
 
 /* Tree */
-.tree-container{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;overflow-x:auto}
-.tree{list-style:none;padding:0}
+.tree-wrap{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:20px 24px;overflow-x:auto}
+.tree{list-style:none}
 .tree-node{position:relative}
-.node-card{display:inline-flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;min-width:200px;position:relative}
-.node-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(99,102,241,.1)}
-.node-card.highlighted{background:#fef9c3;border-color:#facc15;box-shadow:0 0 0 3px rgba(250,204,21,.2)}
-.node-card.uncrawled{opacity:.65;border-style:dashed;cursor:default}
-.node-card.uncrawled:hover{border-color:#94a3b8;box-shadow:none}
-.node-emoji{font-size:1.3rem;flex-shrink:0;width:32px;text-align:center}
-.node-info{flex:1;min-width:0}
-.node-title{font-weight:600;font-size:.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.node-card.uncrawled .node-title{color:var(--text-secondary);font-style:italic}
-.node-path{font-size:.75rem;color:var(--text-secondary);font-family:'SF Mono',Consolas,'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.node-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.node-count{background:var(--accent-light);color:var(--accent);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;line-height:1.5}
-.node-badge{font-size:.65rem;padding:2px 7px;border-radius:8px;line-height:1.4;font-weight:500;color:#64748b;background:#f1f5f9;white-space:nowrap}
-.node-toggle{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--text-secondary);transition:all .15s;line-height:1}
-.node-toggle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-/* Connector lines */
-.node-children{list-style:none;padding-left:36px;margin:0;position:relative}
-.tree>.tree-node>.node-children{padding-left:32px}
-.node-children::before{content:'';position:absolute;left:17px;top:0;bottom:0;width:2px;background:var(--border);border-radius:1px}
-.tree-node::before{content:'';position:absolute;left:-19px;top:50%;width:19px;height:2px;background:var(--border)}
+/* Node card - clean minimal */
+.node-card{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .1s;min-width:0;position:relative;border:1px solid transparent}
+.node-card:hover{background:var(--slate-50);border-color:var(--slate-200)}
+.node-card.highlight{background:var(--amber-100);border-color:var(--amber-500)}
+.node-info{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.ok{background:var(--green-500)}
+.status-dot.err{background:var(--amber-500)}
+.node-title{font-size:.82rem;font-weight:500;color:var(--slate-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.node-path{font-size:.72rem;color:var(--slate-400);font-family:'SF Mono',Consolas,'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.node-error{font-size:.68rem;color:var(--red-500);font-weight:600;background:var(--red-100);padding:1px 6px;border-radius:4px;flex-shrink:0}
+.node-count{font-size:.7rem;color:var(--slate-400);background:var(--slate-100);padding:1px 7px;border-radius:4px;font-weight:600;flex-shrink:0}
+.node-toggle{width:18px;height:18px;border-radius:4px;border:1px solid var(--slate-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--slate-400);transition:all .1s;flex-shrink:0;line-height:1}
+.node-toggle:hover{background:var(--slate-100);border-color:var(--slate-300)}
+
+/* Connector lines - thin and subtle */
+.node-children{list-style:none;padding-left:28px;margin:2px 0}
+.node-children::before{content:'';position:absolute;left:13px;top:0;bottom:0;width:1px;background:var(--slate-200)}
+.tree-node::before{content:'';position:absolute;left:-15px;top:50%;width:15px;height:1px;background:var(--slate-200)}
 .tree>.tree-node::before{display:none}
-.tree>.tree-node>.node-children::before{left:16px}
-.tree>.tree-node>.node-children>.tree-node::before{left:-18px}
-
-/* Collapse */
 .node-children.collapsed{display:none}
 
 /* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a202c;color:#fff;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:999;opacity:0;animation:toastIn .3s forwards;pointer-events:none}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--slate-800);color:#fff;padding:8px 16px;border-radius:6px;font-size:.82rem;z-index:999;opacity:0;animation:toastIn .25s forwards;pointer-events:none}
 @keyframes toastIn{to{opacity:1}}
-@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(8px)}}
 
-/* Scrollbar */
-.tree-container::-webkit-scrollbar{height:8px}
-.tree-container::-webkit-scrollbar-track{background:transparent}
-.tree-container::-webkit-scrollbar-thumb{background:#cbd5e0;border-radius:4px}
+/* Empty */
+.empty{text-align:center;padding:60px 20px;color:var(--slate-400)}
+.empty .e-icon{font-size:2.5rem;margin-bottom:8px}
+.empty p{font-size:.95rem}
 
-/* Empty state */
-.empty{text-align:center;padding:60px 20px;color:var(--text-secondary)}
-.empty .emoji{font-size:3rem;margin-bottom:12px}
-.empty p{font-size:1.05rem}
-
-@media(max-width:768px){
+@media(max-width:640px){
   .app{padding:12px}
   .header{padding:16px}
-  .tree-container{padding:16px}
-  .header-top{flex-direction:column;align-items:flex-start}
-  .node-card{min-width:160px;padding:8px 12px}
-  .node-children{padding-left:24px}
-  .tree-node::before{left:-13px;width:13px}
-  .node-children::before{left:11px}
+  .tree-wrap{padding:12px}
+  .header-top{flex-direction:column}
+  .node-title{max-width:120px}
+  .node-path{max-width:100px}
+  .node-children{padding-left:20px}
+  .tree-node::before{left:-11px;width:11px}
+  .node-children::before{left:9px}
 }
 </style>
 </head>
@@ -89,45 +90,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <div class="app">
   <header class="header">
     <div class="header-top">
-      <h1 class="domain">{{ domain }}</h1>
+      <div>
+        <h1 class="domain">{{ domain }}</h1>
+      </div>
       <div class="stats">
-        <span class="stat stat-ok">{{ stats.crawled }} crawled</span>
-        {%- if stats.discovered > stats.crawled %}
-        <span class="stat stat-muted">{{ stats.discovered }} discovered</span>
+        <span class="stat stat-neutral">{{ total_pages }} pages</span>
+        <span class="stat stat-ok">{{ ok_count }} ok</span>
+        {%- if err_count %}
+        <span class="stat stat-err">{{ err_count }} failed</span>
         {%- endif %}
-        <span class="stat">depth {{ stats.depth }}</span>
+        <span class="stat stat-neutral">depth {{ max_depth }}</span>
       </div>
     </div>
     <div class="controls">
       <div class="search-wrap">
         <span class="icon">&#x1F50D;</span>
-        <input type="text" id="search" placeholder="Search pages..." autocomplete="off">
+        <input type="text" id="search" placeholder="Search..." autocomplete="off">
       </div>
-      <button class="btn" onclick="expandAll()">Expand All</button>
-      <button class="btn" onclick="collapseAll()">Collapse All</button>
+      <button class="btn" onclick="expandAll()">Expand all</button>
+      <button class="btn" onclick="collapseAll()">Collapse all</button>
     </div>
   </header>
 
-  <main class="tree-container">
+  <div class="tree-wrap">
     {%- if tree %}
     <ul class="tree">
       {%- macro render_node(node) %}
-      <li class="tree-node" data-depth="{{ node.depth }}">
-        <div class="node-card{% if not node.crawled %} uncrawled{% endif %}" data-url="{{ node.url }}" data-title="{{ node.title }}">
-          <span class="node-emoji">{{ node.emoji }}</span>
+      <li class="tree-node">
+        <div class="node-card" data-url="{{ node.url }}" data-title="{{ node.title }}">
           <div class="node-info">
-            <div class="node-title">{{ node.title }}</div>
-            <div class="node-path">{{ node.path }}</div>
+            <span class="status-dot {{ 'ok' if node.crawled else 'err' }}"></span>
+            <span class="node-title">{{ node.title }}</span>
+            <span class="node-path">{{ node.path }}</span>
           </div>
-          <div class="node-actions">
-            {%- if not node.crawled %}
-            <span class="node-badge">not crawled</span>
-            {%- endif %}
-            {%- if node.children %}
-            <span class="node-count">{{ node.child_count }}</span>
-            <button class="node-toggle" onclick="event.stopPropagation();toggleNode(this)">&minus;</button>
-            {%- endif %}
-          </div>
+          {%- if node.error %}
+          <span class="node-error">{{ node.error }}</span>
+          {%- endif %}
+          {%- if node.children %}
+          <span class="node-count">{{ node.child_count }}</span>
+          <button class="node-toggle" onclick="event.stopPropagation();toggleNode(this)">&#8722;</button>
+          {%- endif %}
         </div>
         {%- if node.children %}
         <ul class="node-children">
@@ -142,93 +144,84 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
     </ul>
     {%- else %}
     <div class="empty">
-      <div class="emoji">&#x1F50D;</div>
-      <p>No pages were crawled. Check the URL and try again.</p>
+      <div class="e-icon">&#x1F50D;</div>
+      <p>No pages crawled.</p>
     </div>
     {%- endif %}
-  </main>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
 (function(){
-  const tree = document.querySelector('.tree');
+  var tree = document.querySelector('.tree');
   if (!tree) return;
 
-  function toggleNode(btn) {
-    const li = btn.closest('.tree-node');
-    const children = li.querySelector(':scope > .node-children');
-    if (children) {
-      children.classList.toggle('collapsed');
-      btn.textContent = children.classList.contains('collapsed') ? '+' : '\u2212';
+  window.toggleNode = function(btn) {
+    var li = btn.closest('.tree-node');
+    var ch = li.querySelector(':scope > .node-children');
+    if (ch) {
+      ch.classList.toggle('collapsed');
+      btn.textContent = ch.classList.contains('collapsed') ? '+' : '\u2212';
     }
-  }
+  };
 
-  function expandAll() {
-    document.querySelectorAll('.node-children.collapsed').forEach(el => el.classList.remove('collapsed'));
-    document.querySelectorAll('.node-toggle').forEach(btn => btn.textContent = '\u2212');
-  }
+  window.expandAll = function() {
+    document.querySelectorAll('.node-children.collapsed').forEach(function(e){e.classList.remove('collapsed')});
+    document.querySelectorAll('.node-toggle').forEach(function(b){b.textContent='\u2212'});
+  };
 
-  function collapseAll() {
-    document.querySelectorAll('.tree-node').forEach(li => {
-      const children = li.querySelector(':scope > .node-children');
-      if (children) {
-        children.classList.add('collapsed');
-        const btn = li.querySelector('.node-toggle');
+  window.collapseAll = function() {
+    document.querySelectorAll('.tree-node').forEach(function(li){
+      var ch = li.querySelector(':scope > .node-children');
+      if (ch) {
+        ch.classList.add('collapsed');
+        var btn = li.querySelector('.node-toggle');
         if (btn) btn.textContent = '+';
       }
     });
-  }
+  };
 
-  // Click node to copy URL
-  document.querySelectorAll('.node-card').forEach(card => {
-    card.addEventListener('click', function(e) {
-      const url = this.dataset.url;
+  // Copy URL on click
+  document.querySelectorAll('.node-card').forEach(function(card){
+    card.addEventListener('click', function(e){
+      if (e.target.classList.contains('node-toggle')) return;
+      var url = this.dataset.url;
       if (!url) return;
-      navigator.clipboard.writeText(url).then(() => {
+      navigator.clipboard.writeText(url).then(function(){
         showToast('Copied: ' + url);
-        this.style.borderColor = '#22c55e';
-        this.style.background = '#f0fdf4';
-        setTimeout(() => {
-          this.style.borderColor = '';
-          this.style.background = '';
-        }, 600);
-      }).catch(() => {});
+      }).catch(function(){});
     });
   });
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
+  function showToast(msg){
+    var t = document.getElementById('toast');
     t.textContent = msg;
     t.style.animation = 'none';
     void t.offsetWidth;
-    t.style.animation = 'toastIn .3s forwards';
+    t.style.animation = 'toastIn .25s forwards';
     clearTimeout(t._timer);
-    t._timer = setTimeout(() => {
-      t.style.animation = 'toastOut .3s forwards';
-    }, 2000);
+    t._timer = setTimeout(function(){ t.style.animation = 'toastOut .25s forwards'; }, 1800);
   }
 
   // Search
-  const searchInput = document.getElementById('search');
+  var searchInput = document.getElementById('search');
   if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      const term = this.value.toLowerCase().trim();
-      document.querySelectorAll('.node-card').forEach(c => c.classList.remove('highlighted'));
-
+    searchInput.addEventListener('input', function(){
+      var term = this.value.toLowerCase().trim();
+      document.querySelectorAll('.node-card').forEach(function(c){c.classList.remove('highlight')});
       if (!term) return;
-
-      document.querySelectorAll('.node-card').forEach(card => {
-        const url = (card.dataset.url || '').toLowerCase();
-        const title = (card.dataset.title || '').toLowerCase();
-        if (url.includes(term) || title.includes(term)) {
-          card.classList.add('highlighted');
-          let parent = card.closest('.tree-node');
+      document.querySelectorAll('.node-card').forEach(function(card){
+        var url = (card.dataset.url||'').toLowerCase();
+        var title = (card.dataset.title||'').toLowerCase();
+        if (url.indexOf(term) !== -1 || title.indexOf(term) !== -1) {
+          card.classList.add('highlight');
+          var parent = card.closest('.tree-node');
           while (parent) {
-            const children = parent.querySelector(':scope > .node-children');
-            if (children) children.classList.remove('collapsed');
-            const btn = parent.querySelector('.node-toggle');
+            var ch = parent.querySelector(':scope > .node-children');
+            if (ch) ch.classList.remove('collapsed');
+            var btn = parent.querySelector('.node-toggle');
             if (btn) btn.textContent = '\u2212';
             parent = parent.parentElement ? parent.parentElement.closest('.tree-node') : null;
           }
@@ -237,16 +230,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
     });
   }
 
-  // Collapse all on load (if more than 10 nodes)
-  const totalNodes = document.querySelectorAll('.tree-node').length;
-  if (totalNodes > 10) {
-    collapseAll();
-  }
-
-  // Expose for inline onclick
-  window.toggleNode = toggleNode;
-  window.expandAll = expandAll;
-  window.collapseAll = collapseAll;
+  // Auto-collapse if >10 nodes
+  if (document.querySelectorAll('.tree-node').length > 10) collapseAll();
 })();
 </script>
 </body>
