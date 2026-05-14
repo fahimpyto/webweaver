@@ -28,10 +28,11 @@ if __name__ == '__main__':
     tree = build_tree(pages, start_url)
     domain_name = get_domain_name(start_url)
 
-    print(f"\nGenerating output.html ...")
+    output_file = f"{domain_name}.html"
+    print(f"\nGenerating {output_file} ...")
     html = generate_html(tree, domain_name)
 
-    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output.html')
+    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_file)
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html)
 
