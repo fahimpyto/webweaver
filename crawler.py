@@ -58,6 +58,7 @@ def crawl_website(start_url, max_pages=None):
     visited = set()
     pages = {}
     pages_crawled = 0
+    attempts = 0
 
     warned = False
     WARNING_THRESHOLD = 1000
@@ -79,7 +80,8 @@ def crawl_website(start_url, max_pages=None):
         if current_url in visited:
             continue
 
-        print(f"[{pages_crawled + 1}] Crawling: {current_url}")
+        attempts += 1
+        print(f"[{pages_crawled + 1}/{attempts}] Crawling: {current_url}")
         visited.add(current_url)
 
         try:
@@ -111,5 +113,5 @@ def crawl_website(start_url, max_pages=None):
         except Exception as e:
             print(f"  -> Error: {e}")
 
-    print(f"\nDone. Processed {pages_crawled} pages.")
+    print(f"\nDone. Successfully crawled {pages_crawled} page(s).")
     return pages, base_domain

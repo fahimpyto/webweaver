@@ -16,6 +16,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .domain{font-size:1.3rem;font-weight:700;color:var(--text)}
 .stats{display:flex;gap:16px}
 .stat{padding:6px 14px;background:var(--accent-light);border-radius:8px;font-size:.85rem;color:var(--accent);font-weight:600}
+.stat-ok{background:#ecfdf5;color:#059669}
+.stat-muted{background:#f1f5f9;color:#64748b}
 .controls{display:flex;gap:10px;flex-wrap:wrap}
 .search-wrap{position:relative;flex:1;min-width:200px}
 .search-wrap input{width:100%;padding:9px 14px 9px 36px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;outline:0;transition:border-color .2s}
@@ -23,8 +25,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .search-wrap .icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:1rem}
 .btn{padding:9px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;font-size:.85rem;font-weight:500;color:var(--text);transition:all .15s}
 .btn:hover{background:#f8fafc;border-color:#cbd5e0}
-.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn-primary:hover{opacity:.9}
 
 /* Tree */
 .tree-container{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;overflow-x:auto}
@@ -33,12 +33,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .node-card{display:inline-flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;min-width:200px;position:relative}
 .node-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(99,102,241,.1)}
 .node-card.highlighted{background:#fef9c3;border-color:#facc15;box-shadow:0 0 0 3px rgba(250,204,21,.2)}
+.node-card.uncrawled{opacity:.65;border-style:dashed;cursor:default}
+.node-card.uncrawled:hover{border-color:#94a3b8;box-shadow:none}
 .node-emoji{font-size:1.3rem;flex-shrink:0;width:32px;text-align:center}
 .node-info{flex:1;min-width:0}
 .node-title{font-weight:600;font-size:.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node-card.uncrawled .node-title{color:var(--text-secondary);font-style:italic}
 .node-path{font-size:.75rem;color:var(--text-secondary);font-family:'SF Mono',Consolas,'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .node-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .node-count{background:var(--accent-light);color:var(--accent);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;line-height:1.5}
+.node-badge{font-size:.65rem;padding:2px 7px;border-radius:8px;line-height:1.4;font-weight:500;color:#64748b;background:#f1f5f9;white-space:nowrap}
 .node-toggle{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--text-secondary);transition:all .15s;line-height:1}
 .node-toggle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 
@@ -54,7 +58,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 /* Collapse */
 .node-children.collapsed{display:none}
 
-/* Breadcrumb on click */
+/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a202c;color:#fff;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:999;opacity:0;animation:toastIn .3s forwards;pointer-events:none}
 @keyframes toastIn{to{opacity:1}}
 @keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
@@ -87,7 +91,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
     <div class="header-top">
       <h1 class="domain">{{ domain }}</h1>
       <div class="stats">
-        <span class="stat">{{ stats.pages }} pages</span>
+        <span class="stat stat-ok">{{ stats.crawled }} crawled</span>
+        {%- if stats.discovered > stats.crawled %}
+        <span class="stat stat-muted">{{ stats.discovered }} discovered</span>
+        {%- endif %}
         <span class="stat">depth {{ stats.depth }}</span>
       </div>
     </div>
@@ -106,18 +113,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
     <ul class="tree">
       {%- macro render_node(node) %}
       <li class="tree-node" data-depth="{{ node.depth }}">
-        <div class="node-card" data-url="{{ node.url }}" data-title="{{ node.title }}">
+        <div class="node-card{% if not node.crawled %} uncrawled{% endif %}" data-url="{{ node.url }}" data-title="{{ node.title }}">
           <span class="node-emoji">{{ node.emoji }}</span>
           <div class="node-info">
             <div class="node-title">{{ node.title }}</div>
             <div class="node-path">{{ node.path }}</div>
           </div>
-          {%- if node.children %}
           <div class="node-actions">
+            {%- if not node.crawled %}
+            <span class="node-badge">not crawled</span>
+            {%- endif %}
+            {%- if node.children %}
             <span class="node-count">{{ node.child_count }}</span>
             <button class="node-toggle" onclick="event.stopPropagation();toggleNode(this)">&minus;</button>
+            {%- endif %}
           </div>
-          {%- endif %}
         </div>
         {%- if node.children %}
         <ul class="node-children">

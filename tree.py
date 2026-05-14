@@ -48,6 +48,7 @@ class PageNode:
         self.depth = depth
         self.emoji = '\U0001f4c4'
         self.children = []
+        self.crawled = True
 
     def add_child(self, node):
         self.children.append(node)
@@ -68,17 +69,20 @@ class PageNode:
             'depth': self.depth,
             'emoji': self.emoji,
             'child_count': self.child_count,
+            'crawled': self.crawled,
             'children': [c.to_dict() for c in self.children],
         }
 
 
-def _find_path_parent(url, pages, start_url):
+def _find_path_parent(url, all_urls, start_url):
     parsed = urlparse(url)
     parts = [p for p in parsed.path.split('/') if p]
 
+    url_set = frozenset(all_urls)
+
     for i in range(len(parts) - 1, 0, -1):
         parent_path = '/' + '/'.join(parts[:i])
-        for pu in pages:
+        for pu in url_set:
             pu_parsed = urlparse(pu)
             if (pu_parsed.path.rstrip('/') or '/') == parent_path:
                 return pu
@@ -87,28 +91,40 @@ def _find_path_parent(url, pages, start_url):
 
 
 def build_tree(pages, start_url):
-    start_normalized = start_url
+    all_urls = {start_url}
+    for url, data in pages.items():
+        all_urls.add(url)
+        for link in data.get('links', []):
+            all_urls.add(link)
+
+    sorted_urls = sorted(all_urls, key=lambda u: len(urlparse(u).path.split('/')))
+
     root = PageNode(
-        start_normalized,
-        pages.get(start_normalized, {}).get('title', 'Homepage'),
+        start_url,
+        pages.get(start_url, {}).get('title', 'Homepage'),
         depth=0,
     )
     root.emoji = '\U0001f3e0'
-    all_nodes = {start_normalized: root}
-
-    sorted_urls = sorted(pages.keys(), key=lambda u: len(urlparse(u).path.split('/')))
+    root.crawled = start_url in pages or True
+    all_nodes = {start_url: root}
 
     for url in sorted_urls:
-        if url == start_normalized:
+        if url == start_url:
             continue
 
         parsed = urlparse(url)
-        parent_url = _find_path_parent(url, pages, start_normalized)
+        is_crawled = url in pages
+
+        title = pages[url].get('title', '') if is_crawled else ''
+        if not title:
+            title = title_from_url(url)
+
+        parent_url = _find_path_parent(url, all_urls, start_url)
         parent = all_nodes.get(parent_url, root)
 
-        title = pages[url].get('title', '') or title_from_url(url)
         node = PageNode(url, title, depth=parent.depth + 1)
         node.emoji = get_emoji(parsed.path)
+        node.crawled = is_crawled
         parent.add_child(node)
         all_nodes[url] = node
 

@@ -9,19 +9,6 @@ def get_domain_name(url):
     return urlparse(url).netloc.replace('www.', '')
 
 
-def count_nodes(node):
-    count = 1
-    for child in node.children:
-        count += count_nodes(child)
-    return count
-
-
-def max_tree_depth(node, depth=0):
-    if not node.children:
-        return depth
-    return max(max_tree_depth(child, depth + 1) for child in node.children)
-
-
 if __name__ == '__main__':
     print("=" * 60)
     print("       WebWeaver - Website Hierarchy Crawler")
@@ -39,13 +26,10 @@ if __name__ == '__main__':
 
     pages, domain = crawl_website(start_url, max_pages)
     tree = build_tree(pages, start_url)
-
-    total = count_nodes(tree)
-    depth = max_tree_depth(tree)
     domain_name = get_domain_name(start_url)
 
     print(f"\nGenerating output.html ...")
-    html = generate_html(tree, domain_name, total, depth)
+    html = generate_html(tree, domain_name)
 
     output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output.html')
     with open(output_path, 'w', encoding='utf-8') as f:
