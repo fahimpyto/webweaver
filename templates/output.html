@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ domain }} — Site Map</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f0f2f5;--surface:#fff;--border:#e2e8f0;--text:#1a202c;--text-secondary:#64748b;--accent:#6366f1;--accent-light:#eef2ff;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:1400px;margin:0 auto;padding:20px}
+
+/* Header */
+.header{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 28px;margin-bottom:24px}
+.header-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.domain{font-size:1.3rem;font-weight:700;color:var(--text)}
+.stats{display:flex;gap:16px}
+.stat{padding:6px 14px;background:var(--accent-light);border-radius:8px;font-size:.85rem;color:var(--accent);font-weight:600}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap input{width:100%;padding:9px 14px 9px 36px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;outline:0;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.search-wrap .icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:1rem}
+.btn{padding:9px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;font-size:.85rem;font-weight:500;color:var(--text);transition:all .15s}
+.btn:hover{background:#f8fafc;border-color:#cbd5e0}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{opacity:.9}
+
+/* Tree */
+.tree-container{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;overflow-x:auto}
+.tree{list-style:none;padding:0}
+.tree-node{position:relative}
+.node-card{display:inline-flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;min-width:200px;position:relative}
+.node-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(99,102,241,.1)}
+.node-card.highlighted{background:#fef9c3;border-color:#facc15;box-shadow:0 0 0 3px rgba(250,204,21,.2)}
+.node-emoji{font-size:1.3rem;flex-shrink:0;width:32px;text-align:center}
+.node-info{flex:1;min-width:0}
+.node-title{font-weight:600;font-size:.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node-path{font-size:.75rem;color:var(--text-secondary);font-family:'SF Mono',Consolas,'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.node-count{background:var(--accent-light);color:var(--accent);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;line-height:1.5}
+.node-toggle{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--text-secondary);transition:all .15s;line-height:1}
+.node-toggle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Connector lines */
+.node-children{list-style:none;padding-left:36px;margin:0;position:relative}
+.tree>.tree-node>.node-children{padding-left:32px}
+.node-children::before{content:'';position:absolute;left:17px;top:0;bottom:0;width:2px;background:var(--border);border-radius:1px}
+.tree-node::before{content:'';position:absolute;left:-19px;top:50%;width:19px;height:2px;background:var(--border)}
+.tree>.tree-node::before{display:none}
+.tree>.tree-node>.node-children::before{left:16px}
+.tree>.tree-node>.node-children>.tree-node::before{left:-18px}
+
+/* Collapse */
+.node-children.collapsed{display:none}
+
+/* Breadcrumb on click */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a202c;color:#fff;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:999;opacity:0;animation:toastIn .3s forwards;pointer-events:none}
+@keyframes toastIn{to{opacity:1}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+
+/* Scrollbar */
+.tree-container::-webkit-scrollbar{height:8px}
+.tree-container::-webkit-scrollbar-track{background:transparent}
+.tree-container::-webkit-scrollbar-thumb{background:#cbd5e0;border-radius:4px}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--text-secondary)}
+.empty .emoji{font-size:3rem;margin-bottom:12px}
+.empty p{font-size:1.05rem}
+
+@media(max-width:768px){
+  .app{padding:12px}
+  .header{padding:16px}
+  .tree-container{padding:16px}
+  .header-top{flex-direction:column;align-items:flex-start}
+  .node-card{min-width:160px;padding:8px 12px}
+  .node-children{padding-left:24px}
+  .tree-node::before{left:-13px;width:13px}
+  .node-children::before{left:11px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="header-top">
+      <h1 class="domain">{{ domain }}</h1>
+      <div class="stats">
+        <span class="stat">{{ stats.pages }} pages</span>
+        <span class="stat">depth {{ stats.depth }}</span>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="icon">&#x1F50D;</span>
+        <input type="text" id="search" placeholder="Search pages..." autocomplete="off">
+      </div>
+      <button class="btn" onclick="expandAll()">Expand All</button>
+      <button class="btn" onclick="collapseAll()">Collapse All</button>
+    </div>
+  </header>
+
+  <main class="tree-container">
+    {%- if tree %}
+    <ul class="tree">
+      {%- macro render_node(node) %}
+      <li class="tree-node" data-depth="{{ node.depth }}">
+        <div class="node-card" data-url="{{ node.url }}" data-title="{{ node.title }}">
+          <span class="node-emoji">{{ node.emoji }}</span>
+          <div class="node-info">
+            <div class="node-title">{{ node.title }}</div>
+            <div class="node-path">{{ node.path }}</div>
+          </div>
+          {%- if node.children %}
+          <div class="node-actions">
+            <span class="node-count">{{ node.child_count }}</span>
+            <button class="node-toggle" onclick="event.stopPropagation();toggleNode(this)">&minus;</button>
+          </div>
+          {%- endif %}
+        </div>
+        {%- if node.children %}
+        <ul class="node-children">
+          {%- for child in node.children %}
+          {{ render_node(child) }}
+          {%- endfor %}
+        </ul>
+        {%- endif %}
+      </li>
+      {%- endmacro %}
+      {{ render_node(tree) }}
+    </ul>
+    {%- else %}
+    <div class="empty">
+      <div class="emoji">&#x1F50D;</div>
+      <p>No pages were crawled. Check the URL and try again.</p>
+    </div>
+    {%- endif %}
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+  const tree = document.querySelector('.tree');
+  if (!tree) return;
+
+  function toggleNode(btn) {
+    const li = btn.closest('.tree-node');
+    const children = li.querySelector(':scope > .node-children');
+    if (children) {
+      children.classList.toggle('collapsed');
+      btn.textContent = children.classList.contains('collapsed') ? '+' : '\u2212';
+    }
+  }
+
+  function expandAll() {
+    document.querySelectorAll('.node-children.collapsed').forEach(el => el.classList.remove('collapsed'));
+    document.querySelectorAll('.node-toggle').forEach(btn => btn.textContent = '\u2212');
+  }
+
+  function collapseAll() {
+    document.querySelectorAll('.tree-node').forEach(li => {
+      const children = li.querySelector(':scope > .node-children');
+      if (children) {
+        children.classList.add('collapsed');
+        const btn = li.querySelector('.node-toggle');
+        if (btn) btn.textContent = '+';
+      }
+    });
+  }
+
+  // Click node to copy URL
+  document.querySelectorAll('.node-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      const url = this.dataset.url;
+      if (!url) return;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Copied: ' + url);
+        this.style.borderColor = '#22c55e';
+        this.style.background = '#f0fdf4';
+        setTimeout(() => {
+          this.style.borderColor = '';
+          this.style.background = '';
+        }, 600);
+      }).catch(() => {});
+    });
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.animation = 'none';
+    void t.offsetWidth;
+    t.style.animation = 'toastIn .3s forwards';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => {
+      t.style.animation = 'toastOut .3s forwards';
+    }, 2000);
+  }
+
+  // Search
+  const searchInput = document.getElementById('search');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const term = this.value.toLowerCase().trim();
+      document.querySelectorAll('.node-card').forEach(c => c.classList.remove('highlighted'));
+
+      if (!term) return;
+
+      document.querySelectorAll('.node-card').forEach(card => {
+        const url = (card.dataset.url || '').toLowerCase();
+        const title = (card.dataset.title || '').toLowerCase();
+        if (url.includes(term) || title.includes(term)) {
+          card.classList.add('highlighted');
+          let parent = card.closest('.tree-node');
+          while (parent) {
+            const children = parent.querySelector(':scope > .node-children');
+            if (children) children.classList.remove('collapsed');
+            const btn = parent.querySelector('.node-toggle');
+            if (btn) btn.textContent = '\u2212';
+            parent = parent.parentElement ? parent.parentElement.closest('.tree-node') : null;
+          }
+        }
+      });
+    });
+  }
+
+  // Collapse all on load (if more than 10 nodes)
+  const totalNodes = document.querySelectorAll('.tree-node').length;
+  if (totalNodes > 10) {
+    collapseAll();
+  }
+
+  // Expose for inline onclick
+  window.toggleNode = toggleNode;
+  window.expandAll = expandAll;
+  window.collapseAll = collapseAll;
+})();
+</script>
+</body>
+</html>

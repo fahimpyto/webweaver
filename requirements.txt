@@ -1,5 +1,4 @@
 requests
 beautifulsoup4
-networkx
-pyvis
 lxml
+jinja2
