@@ -6,145 +6,139 @@
 <title>{{ domain }} — Site Map</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--slate-50:#f8fafc;--slate-100:#f1f5f9;--slate-200:#e2e8f0;--slate-300:#cbd5e1;--slate-400:#94a3b8;--slate-500:#64748b;--slate-600:#475569;--slate-700:#334155;--slate-800:#1e293b;--slate-900:#0f172a;--green-500:#22c55e;--green-100:#dcfce7;--amber-500:#f59e0b;--amber-100:#fef3c7;--red-500:#ef4444;--red-100:#fee2e2}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--slate-50);color:var(--slate-900);min-height:100vh}
+:root{--s50:#f8fafc;--s100:#f1f5f9;--s200:#e2e8f0;--s300:#cbd5e1;--s400:#94a3b8;--s500:#64748b;--s600:#475569;--s700:#334155;--s800:#1e293b;--s900:#0f172a;--g:#22c55e;--g100:#dcfce7;--a:#f59e0b;--a100:#fef3c7;--r:#ef4444;--r100:#fee2e2}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--s50);color:var(--s900);min-height:100vh}
 .app{max-width:1200px;margin:0 auto;padding:24px}
+.header{background:#fff;border:1px solid var(--s200);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+.h-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.domain{font-size:1.05rem;font-weight:700;color:var(--s900)}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{font-size:.78rem;padding:3px 9px;border-radius:5px;font-weight:600;border:1px solid var(--s200)}
+.s-ok{background:var(--g100);color:#15803d;border-color:#86efac}
+.s-err{background:var(--r100);color:#b91c1c;border-color:#fca5a5}
+.s-n{background:var(--s100);color:var(--s600);border-color:var(--s200)}
+.ctrls{display:flex;gap:6px;flex-wrap:wrap}
+.sw{position:relative;flex:1;min-width:160px}
+.sw input{width:100%;padding:6px 10px 6px 28px;border:1px solid var(--s200);border-radius:5px;font-size:.82rem;outline:0}
+.sw input:focus{border-color:var(--s400)}
+.sw .ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--s400);font-size:.8rem}
+.btn{padding:6px 12px;border:1px solid var(--s200);border-radius:5px;background:#fff;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--s600)}
+.btn:hover{background:var(--s50);border-color:var(--s300)}
 
-/* Header */
-.header{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:24px 28px;margin-bottom:20px}
-.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:16px}
-.domain{font-size:1.1rem;font-weight:700;color:var(--slate-900)}
-.stats{display:flex;gap:8px;flex-wrap:wrap}
-.stat{font-size:.8rem;padding:4px 10px;border-radius:6px;font-weight:600;border:1px solid var(--slate-200)}
-.stat-ok{background:var(--green-100);color:#15803d;border-color:#86efac}
-.stat-err{background:var(--red-100);color:#b91c1c;border-color:#fca5a5}
-.stat-neutral{background:var(--slate-100);color:var(--slate-600);border-color:var(--slate-200)}
-.controls{display:flex;gap:8px;flex-wrap:wrap}
-.search-wrap{position:relative;flex:1;min-width:180px}
-.search-wrap input{width:100%;padding:7px 12px 7px 32px;border:1px solid var(--slate-200);border-radius:6px;font-size:.85rem;outline:0;transition:border-color .15s}
-.search-wrap input:focus{border-color:var(--slate-400)}
-.search-wrap .icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--slate-400);font-size:.85rem}
-.btn{padding:7px 14px;border:1px solid var(--slate-200);border-radius:6px;background:#fff;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--slate-600);transition:all .1s}
-.btn:hover{background:var(--slate-50);border-color:var(--slate-300)}
-
-/* Report summary */
-.report-bar{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--slate-100);flex-wrap:wrap}
-.report-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--slate-600)}
-.report-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.report-dot.green{background:var(--green-500)}
-.report-dot.amber{background:var(--amber-500)}
-.report-dot.red{background:var(--red-500)}
-.report-num{font-weight:700;color:var(--slate-800);margin-right:2px}
-
-/* Tree */
-.tree-wrap{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:20px 24px;overflow-x:auto}
+.tw{background:#fff;border:1px solid var(--s200);border-radius:12px;padding:16px 20px;overflow-x:auto}
 .tree{list-style:none}
 .tree-node{position:relative}
 
-/* Node card - clean minimal */
-.node-card{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .1s;min-width:0;position:relative;border:1px solid transparent}
-.node-card:hover{background:var(--slate-50);border-color:var(--slate-200)}
-.node-card.highlight{background:var(--amber-100);border-color:var(--amber-500)}
-.node-info{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
-.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.status-dot.ok{background:var(--green-500)}
-.status-dot.err{background:var(--amber-500)}
-.node-title{font-size:.82rem;font-weight:500;color:var(--slate-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
-.node-path{font-size:.72rem;color:var(--slate-400);font-family:'SF Mono',Consolas,'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
-.node-error{font-size:.68rem;color:var(--red-500);font-weight:600;background:var(--red-100);padding:1px 6px;border-radius:4px;flex-shrink:0}
-.node-count{font-size:.7rem;color:var(--slate-400);background:var(--slate-100);padding:1px 7px;border-radius:4px;font-weight:600;flex-shrink:0}
-.node-toggle{width:18px;height:18px;border-radius:4px;border:1px solid var(--slate-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--slate-400);transition:all .1s;flex-shrink:0;line-height:1}
-.node-toggle:hover{background:var(--slate-100);border-color:var(--slate-300)}
+.node-card{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:5px;cursor:pointer;min-width:0;border:1px solid transparent;user-select:none}
+.node-card:hover{background:var(--s50);border-color:var(--s200)}
+.node-card.hl{background:var(--a100);border-color:var(--a)}
+.node-card.expanded{background:var(--s100);border-color:var(--s200)}
 
-/* Connector lines - thin and subtle */
-.node-children{list-style:none;padding-left:28px;margin:2px 0}
-.node-children::before{content:'';position:absolute;left:13px;top:0;bottom:0;width:1px;background:var(--slate-200)}
-.tree-node::before{content:'';position:absolute;left:-15px;top:50%;width:15px;height:1px;background:var(--slate-200)}
+.caret{width:14px;height:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.6rem;color:var(--s400);transition:transform .15s;visibility:hidden}
+.caret.show{visibility:visible}
+.caret.open{transform:rotate(90deg)}
+
+.sd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sd.ok{background:var(--g)}
+.sd.err{background:var(--a)}
+
+.ni{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+.nt{font-size:.8rem;font-weight:500;color:var(--s800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.np{font-size:.7rem;color:var(--s400);font-family:'SF Mono',Consolas,'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.ne{font-size:.66rem;color:var(--r);font-weight:600;background:var(--r100);padding:1px 5px;border-radius:3px;flex-shrink:0}
+.nc{font-size:.68rem;color:var(--s400);background:var(--s100);padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0}
+.cb{width:20px;height:20px;border-radius:4px;border:none;background:0 0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;opacity:0;transition:opacity .15s}
+.node-card:hover .cb{opacity:1}
+.cb:hover{background:var(--s100)}
+
+.nch{list-style:none;padding-left:24px;margin:1px 0}
+.nch::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:1px;background:var(--s200)}
+.tree-node::before{content:'';position:absolute;left:-13px;top:50%;width:13px;height:1px;background:var(--s200)}
 .tree>.tree-node::before{display:none}
-.node-children.collapsed{display:none}
+.nch.c{display:none}
 
-/* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--slate-800);color:#fff;padding:8px 16px;border-radius:6px;font-size:.82rem;z-index:999;opacity:0;animation:toastIn .25s forwards;pointer-events:none}
-@keyframes toastIn{to{opacity:1}}
-@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(8px)}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--s800);color:#fff;padding:7px 14px;border-radius:5px;font-size:.8rem;z-index:999;opacity:0;animation:ti .25s forwards;pointer-events:none}
+@keyframes ti{to{opacity:1}}
+@keyframes to{to{opacity:0;transform:translateX(-50%) translateY(6px)}}
 
-/* Empty */
-.empty{text-align:center;padding:60px 20px;color:var(--slate-400)}
-.empty .e-icon{font-size:2.5rem;margin-bottom:8px}
-.empty p{font-size:.95rem}
+.em{text-align:center;padding:50px 20px;color:var(--s400)}
+.em .ei{font-size:2.2rem;margin-bottom:6px}
+.em p{font-size:.9rem}
 
 @media(max-width:640px){
   .app{padding:12px}
-  .header{padding:16px}
-  .tree-wrap{padding:12px}
-  .header-top{flex-direction:column}
-  .node-title{max-width:120px}
-  .node-path{max-width:100px}
-  .node-children{padding-left:20px}
-  .tree-node::before{left:-11px;width:11px}
-  .node-children::before{left:9px}
+  .header{padding:14px}
+  .tw{padding:10px}
+  .h-top{flex-direction:column}
+  .nt{max-width:100px}
+  .np{max-width:80px}
+  .nch{padding-left:18px}
+  .tree-node::before{left:-10px;width:10px}
+  .nch::before{left:8px}
+  .node-card{padding:4px 8px}
 }
 </style>
 </head>
 <body>
 <div class="app">
-  <header class="header">
-    <div class="header-top">
+  <div class="header">
+    <div class="h-top">
       <div>
-        <h1 class="domain">{{ domain }}</h1>
+        <div class="domain">{{ domain }}</div>
       </div>
       <div class="stats">
-        <span class="stat stat-neutral">{{ total_pages }} pages</span>
-        <span class="stat stat-ok">{{ ok_count }} ok</span>
+        <span class="stat s-n">{{ total_pages }} pages</span>
+        <span class="stat s-ok">{{ ok_count }} ok</span>
         {%- if err_count %}
-        <span class="stat stat-err">{{ err_count }} failed</span>
+        <span class="stat s-err">{{ err_count }} failed</span>
         {%- endif %}
-        <span class="stat stat-neutral">depth {{ max_depth }}</span>
+        <span class="stat s-n">depth {{ max_depth }}</span>
       </div>
     </div>
-    <div class="controls">
-      <div class="search-wrap">
-        <span class="icon">&#x1F50D;</span>
-        <input type="text" id="search" placeholder="Search..." autocomplete="off">
+    <div class="ctrls">
+      <div class="sw">
+        <span class="ic">&#x1F50D;</span>
+        <input type="text" id="s" placeholder="Search..." autocomplete="off">
       </div>
-      <button class="btn" onclick="expandAll()">Expand all</button>
-      <button class="btn" onclick="collapseAll()">Collapse all</button>
+      <button class="btn" onclick="ea()">Expand all</button>
+      <button class="btn" onclick="ca()">Collapse all</button>
     </div>
-  </header>
+  </div>
 
-  <div class="tree-wrap">
+  <div class="tw">
     {%- if tree %}
     <ul class="tree">
-      {%- macro render_node(node) %}
+      {%- macro rn(node) %}
       <li class="tree-node">
-        <div class="node-card" data-url="{{ node.url }}" data-title="{{ node.title }}">
-          <div class="node-info">
-            <span class="status-dot {{ 'ok' if node.crawled else 'err' }}"></span>
-            <span class="node-title">{{ node.title }}</span>
-            <span class="node-path">{{ node.path }}</span>
+        <div class="node-card" data-u="{{ node.url }}" data-t="{{ node.title }}">
+          <span class="caret{{ ' show' if node.children }}"></span>
+          <span class="sd {{ 'ok' if node.crawled else 'err' }}"></span>
+          <div class="ni">
+            <span class="nt">{{ node.title }}</span>
+            <span class="np">{{ node.path }}</span>
           </div>
           {%- if node.error %}
-          <span class="node-error">{{ node.error }}</span>
+          <span class="ne">{{ node.error }}</span>
           {%- endif %}
           {%- if node.children %}
-          <span class="node-count">{{ node.child_count }}</span>
-          <button class="node-toggle" onclick="event.stopPropagation();toggleNode(this)">&#8722;</button>
+          <span class="nc">{{ node.child_count }}</span>
           {%- endif %}
+          <button class="cb" title="Copy URL">&#x1F4CB;</button>
         </div>
         {%- if node.children %}
-        <ul class="node-children">
+        <ul class="nch c">
           {%- for child in node.children %}
-          {{ render_node(child) }}
+          {{ rn(child) }}
           {%- endfor %}
         </ul>
         {%- endif %}
       </li>
       {%- endmacro %}
-      {{ render_node(tree) }}
+      {{ rn(tree) }}
     </ul>
     {%- else %}
-    <div class="empty">
-      <div class="e-icon">&#x1F50D;</div>
+    <div class="em">
+      <div class="ei">&#x1F50D;</div>
       <p>No pages crawled.</p>
     </div>
     {%- endif %}
@@ -155,83 +149,86 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 
 <script>
 (function(){
-  var tree = document.querySelector('.tree');
-  if (!tree) return;
+  var tr = document.querySelector('.tree');
+  if (!tr) return;
 
-  window.toggleNode = function(btn) {
-    var li = btn.closest('.tree-node');
-    var ch = li.querySelector(':scope > .node-children');
-    if (ch) {
-      ch.classList.toggle('collapsed');
-      btn.textContent = ch.classList.contains('collapsed') ? '+' : '\u2212';
-    }
+  function tg(card) {
+    var li = card.closest('.tree-node');
+    var ch = li.querySelector(':scope > .nch');
+    if (!ch) return;
+    var collapsed = ch.classList.toggle('c');
+    var caret = card.querySelector('.caret');
+    if (caret) caret.classList.toggle('open', !collapsed);
+    card.classList.toggle('expanded', !collapsed);
+  }
+
+  window.tn = function(card) { tg(card); };
+
+  window.ea = function() {
+    document.querySelectorAll('.nch.c').forEach(function(e){e.classList.remove('c')});
+    document.querySelectorAll('.caret').forEach(function(c){c.classList.add('open')});
+    document.querySelectorAll('.node-card').forEach(function(c){c.classList.add('expanded')});
   };
 
-  window.expandAll = function() {
-    document.querySelectorAll('.node-children.collapsed').forEach(function(e){e.classList.remove('collapsed')});
-    document.querySelectorAll('.node-toggle').forEach(function(b){b.textContent='\u2212'});
+  window.ca = function() {
+    document.querySelectorAll('.nch').forEach(function(e){e.classList.add('c')});
+    document.querySelectorAll('.caret').forEach(function(c){c.classList.remove('open')});
+    document.querySelectorAll('.node-card').forEach(function(c){c.classList.remove('expanded')});
   };
 
-  window.collapseAll = function() {
-    document.querySelectorAll('.tree-node').forEach(function(li){
-      var ch = li.querySelector(':scope > .node-children');
-      if (ch) {
-        ch.classList.add('collapsed');
-        var btn = li.querySelector('.node-toggle');
-        if (btn) btn.textContent = '+';
-      }
-    });
-  };
-
-  // Copy URL on click
+  // Click card to toggle
   document.querySelectorAll('.node-card').forEach(function(card){
     card.addEventListener('click', function(e){
-      if (e.target.classList.contains('node-toggle')) return;
-      var url = this.dataset.url;
+      if (e.target.classList.contains('cb')) return;
+      tg(this);
+    });
+  });
+
+  // Click copy button
+  document.querySelectorAll('.cb').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var card = this.closest('.node-card');
+      var url = card ? card.dataset.u : '';
       if (!url) return;
       navigator.clipboard.writeText(url).then(function(){
-        showToast('Copied: ' + url);
+        var t = document.getElementById('toast');
+        t.textContent = 'Copied: ' + url;
+        t.style.animation = 'none';
+        void t.offsetWidth;
+        t.style.animation = 'ti .25s forwards';
+        clearTimeout(t._tm);
+        t._tm = setTimeout(function(){ t.style.animation = 'to .25s forwards'; }, 1600);
       }).catch(function(){});
     });
   });
 
-  function showToast(msg){
-    var t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.animation = 'none';
-    void t.offsetWidth;
-    t.style.animation = 'toastIn .25s forwards';
-    clearTimeout(t._timer);
-    t._timer = setTimeout(function(){ t.style.animation = 'toastOut .25s forwards'; }, 1800);
-  }
-
   // Search
-  var searchInput = document.getElementById('search');
-  if (searchInput) {
-    searchInput.addEventListener('input', function(){
+  var si = document.getElementById('s');
+  if (si) {
+    si.addEventListener('input', function(){
       var term = this.value.toLowerCase().trim();
-      document.querySelectorAll('.node-card').forEach(function(c){c.classList.remove('highlight')});
+      document.querySelectorAll('.node-card').forEach(function(c){c.classList.remove('hl')});
       if (!term) return;
       document.querySelectorAll('.node-card').forEach(function(card){
-        var url = (card.dataset.url||'').toLowerCase();
-        var title = (card.dataset.title||'').toLowerCase();
+        var url = (card.dataset.u||'').toLowerCase();
+        var title = (card.dataset.t||'').toLowerCase();
         if (url.indexOf(term) !== -1 || title.indexOf(term) !== -1) {
-          card.classList.add('highlight');
-          var parent = card.closest('.tree-node');
-          while (parent) {
-            var ch = parent.querySelector(':scope > .node-children');
-            if (ch) ch.classList.remove('collapsed');
-            var btn = parent.querySelector('.node-toggle');
-            if (btn) btn.textContent = '\u2212';
-            parent = parent.parentElement ? parent.parentElement.closest('.tree-node') : null;
+          card.classList.add('hl');
+          var p = card.closest('.tree-node');
+          while (p) {
+            var ch = p.querySelector(':scope > .nch');
+            if (ch) ch.classList.remove('c');
+            var ca = p.querySelector('.caret');
+            if (ca) ca.classList.add('open');
+            var cd = p.querySelector('.node-card');
+            if (cd) cd.classList.add('expanded');
+            p = p.parentElement ? p.parentElement.closest('.tree-node') : null;
           }
         }
       });
     });
   }
-
-  // Auto-collapse if >10 nodes
-  if (document.querySelectorAll('.tree-node').length > 10) collapseAll();
 })();
 </script>
 </body>
