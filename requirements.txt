@@ -1,6 +1,4 @@
-requests
 beautifulsoup4
 lxml
 jinja2
-networkx
-pyvis
+playwright

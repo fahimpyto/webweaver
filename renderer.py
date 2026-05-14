@@ -10,18 +10,47 @@ def _tree_stats(node):
     ok_count = 1 if node.crawled else 0
     err_count = 0 if node.crawled else 1
     max_depth = node.depth
+    total_time = 0
+    total_size = 0
     for child in node.children:
-        t, o, e, d = _tree_stats(child)
+        t, o, e, d, ct, cs = _tree_stats(child)
         total += t
         ok_count += o
         err_count += e
         max_depth = max(max_depth, d)
-    return total, ok_count, err_count, max_depth
+        total_time += ct
+        total_size += cs
+    return total, ok_count, err_count, max_depth, total_time + (node.load_time or 0), total_size + (node.page_size or 0)
 
 
-def generate_html(tree, domain):
-    total_pages, ok_count, err_count, max_depth = _tree_stats(tree)
+def _calculate_crawl_stats(pages):
+    total_time = 0
+    total_size = 0
+    total_loads = 0
+    
+    for url, data in pages.items():
+        lt = data.get('load_time', 0) or 0
+        ps = data.get('page_size', 0) or 0
+        if lt > 0:
+            total_time += lt
+            total_loads += 1
+        total_size += ps
+    
+    avg_time = total_time / total_loads if total_loads > 0 else 0
+    return {
+        'total_time_ms': round(total_time, 0),
+        'total_size_kb': round(total_size, 1),
+        'avg_time_ms': round(avg_time, 0),
+        'pages_measured': total_loads,
+    }
 
+
+def generate_html(tree, domain, total_time, pages):
+    total_pages, ok_count, err_count, max_depth, crawl_time, total_size = _tree_stats(tree)
+    stats = _calculate_crawl_stats(pages)
+    
+    avg_time = stats['avg_time_ms']
+    
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = env.get_template('output.html')
 
@@ -32,5 +61,8 @@ def generate_html(tree, domain):
         ok_count=ok_count,
         err_count=err_count,
         max_depth=max_depth,
+        total_time=round(total_time, 1),
+        avg_load_time=avg_time,
+        total_size_kb=stats['total_size_kb'],
     )
     return html

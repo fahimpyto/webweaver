@@ -1,9 +1,9 @@
 import os
+import asyncio
 from urllib.parse import urlparse
 from crawler import crawl_website
 from tree import build_tree
 from renderer import generate_html
-from graph import generate_graph
 
 
 def get_domain_name(url):
@@ -11,6 +11,7 @@ def get_domain_name(url):
 
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(BASE, 'output')
 
 
 if __name__ == '__main__':
@@ -28,23 +29,20 @@ if __name__ == '__main__':
     max_input = input("Max pages (Enter for unlimited): ").strip()
     max_pages = int(max_input) if max_input else None
 
-    pages, errors, domain = crawl_website(start_url, max_pages)
+    pages, errors, domain, total_time = asyncio.run(crawl_website(start_url, max_pages))
     tree = build_tree(pages, start_url, errors)
     domain_name = get_domain_name(start_url)
 
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
     tree_file = f"{domain_name}.html"
-    graph_file = f"{domain_name}_graph.html"
-    tree_path = os.path.join(BASE, tree_file)
-    graph_path = os.path.join(BASE, graph_file)
+    tree_path = os.path.join(OUTPUT_DIR, tree_file)
 
     print(f"\nGenerating {tree_file} ...")
-    html = generate_html(tree, domain_name)
+    html = generate_html(tree, domain_name, total_time, pages)
     with open(tree_path, 'w', encoding='utf-8') as f:
         f.write(html)
 
-    print(f"Generating {graph_file} ...")
-    generate_graph(pages, tree, domain_name)
-
     print(f"\nDone! Open in your browser:")
-    print(f"  \u2022 Tree:  file:///{tree_path}")
-    print(f"  \u2022 Graph: file:///{graph_path}")
+    print(f"  file:///{tree_path.replace(os.sep, '/')}")

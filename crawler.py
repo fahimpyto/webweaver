@@ -1,8 +1,8 @@
-import requests
-from bs4 import BeautifulSoup
+import asyncio
+from playwright.async_api import async_playwright
 from urllib.parse import urljoin, urlparse
-import time
 from collections import deque
+import time
 
 
 EXCLUDED_EXTENSIONS = (
@@ -36,95 +36,177 @@ def is_valid_url(url, base_domain):
 
 
 def get_page_title(soup, url):
-    title_tag = soup.find('title')
-    if title_tag and title_tag.get_text().strip():
-        return title_tag.get_text().strip()[:60]
-    h1_tag = soup.find('h1')
-    if h1_tag and h1_tag.get_text().strip():
-        return h1_tag.get_text().strip()[:60]
+    if soup:
+        title_tag = soup.find('title')
+        if title_tag and title_tag.get_text().strip():
+            return title_tag.get_text().strip()[:60]
+        h1_tag = soup.find('h1')
+        if h1_tag and h1_tag.get_text().strip():
+            return h1_tag.get_text().strip()[:60]
     parsed = urlparse(url)
     name = parsed.path.strip('/').replace('-', ' ').replace('_', ' ').title()
     return name or 'Homepage'
 
 
-def crawl_website(start_url, max_pages=None):
+def get_seo_data(soup):
+    seo = {
+        'title': '',
+        'meta_desc': '',
+        'h1_count': 0,
+        'h2_count': 0,
+        'internal_links': 0,
+        'external_links': 0,
+        'images': 0,
+    }
+    if not soup:
+        return seo
+    
+    title_tag = soup.find('title')
+    if title_tag:
+        seo['title'] = title_tag.get_text().strip()[:100]
+    
+    meta_desc = soup.find('meta', attrs={'name': 'description'})
+    if meta_desc:
+        seo['meta_desc'] = meta_desc.get('content', '')[:200]
+    
+    seo['h1_count'] = len(soup.find_all('h1'))
+    seo['h2_count'] = len(soup.find_all('h2'))
+    
+    for link in soup.find_all('a', href=True):
+        href = link.get('href', '')
+        if href.startswith('http'):
+            seo['external_links'] += 1
+        else:
+            seo['internal_links'] += 1
+    
+    seo['images'] = len(soup.find_all('img'))
+    
+    return seo
+
+
+async def crawl_website(start_url, max_pages=None):
     print(f"Starting crawl at: {start_url}")
     print("-" * 50)
-
+    
+    start_time = time.time()
     base_domain = urlparse(start_url).netloc
     start_normalized = normalize_url(start_url)
-
+    
     queue = deque([start_normalized])
     visited = set()
     pages = {}
     errors = {}
     pages_crawled = 0
-    attempts = 0
-
-    warned = False
-    WARNING_THRESHOLD = 1000
-
-    while queue:
-        if max_pages and pages_crawled >= max_pages:
-            break
-
-        total_discovered = len(queue) + pages_crawled
-        if not warned and total_discovered >= WARNING_THRESHOLD:
-            warned = True
-            print(f"\n[!] Warning: {total_discovered} pages found in queue!")
-            resp = input("Continue crawling? (y/n): ").strip().lower()
-            if resp != 'y':
-                print("Stopping by user.")
+    
+    BATCH_SIZE = 10
+    
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        
+        while queue:
+            if max_pages and pages_crawled >= max_pages:
                 break
+            
+            batch = []
+            while len(batch) < BATCH_SIZE and queue:
+                url = queue.popleft()
+                if url not in visited:
+                    batch.append(url)
+            
+            if not batch:
+                break
+            
+            tasks = []
+            for url in batch:
+                tasks.append(crawl_page(url, browser, base_domain, visited))
+            
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            for url, result in zip(batch, results):
+                visited.add(url)
+                
+                if isinstance(result, Exception):
+                    errors[url] = str(result)[:50]
+                    print(f"  -> [ERROR] {url}: {result}")
+                    pages[url] = {
+                        'title': get_page_title(None, url),
+                        'links': [],
+                        'seo': get_seo_data(None),
+                        'load_time': 0,
+                        'page_size': 0,
+                        'status': 0,
+                    }
+                else:
+                    status, html, load_time, page_size = result
+                    
+                    if status == 200 and html:
+                        soup = html
+                        title = get_page_title(soup, url)
+                        links = set()
+                        
+                        for link in soup.find_all('a', href=True):
+                            absolute_url = urljoin(url, link['href'])
+                            absolute_url = absolute_url.split('#')[0]
+                            if is_valid_url(absolute_url, base_domain):
+                                normalized = normalize_url(absolute_url)
+                                links.add(normalized)
+                                if normalized not in visited:
+                                    queue.append(normalized)
+                        
+                        seo = get_seo_data(soup)
+                        
+                        pages[url] = {
+                            'title': title,
+                            'links': list(links),
+                            'seo': seo,
+                            'load_time': round(load_time, 2),
+                            'page_size': round(page_size / 1024, 1),
+                            'status': status,
+                        }
+                        
+                        print(f"[{pages_crawled + 1}] {url} - {status} - {round(load_time, 0)}ms - {round(page_size/1024, 1)}KB")
+                    else:
+                        errors[url] = f"HTTP {status}" if status else "failed"
+                        pages[url] = {
+                            'title': get_page_title(None, url),
+                            'links': [],
+                            'seo': get_seo_data(None),
+                            'load_time': round(load_time, 2),
+                            'page_size': round(page_size / 1024, 1),
+                            'status': status,
+                        }
+                        print(f"  -> [{status}] {url}")
+                    
+                    pages_crawled += 1
+            
+            elapsed = time.time() - start_time
+            print(f"  -> Batch done. Queue: {len(queue)}, Elapsed: {elapsed:.1f}s\n")
+    
+    total_time = time.time() - start_time
+    print(f"\nDone. Successfully crawled {pages_crawled} page(s) in {total_time:.1f}s.")
+    return pages, errors, base_domain, total_time
 
-        current_url = queue.popleft()
-        if current_url in visited:
-            continue
 
-        attempts += 1
-        print(f"[{pages_crawled + 1}/{attempts}] Crawling: {current_url}")
-        visited.add(current_url)
-
-        try:
-            headers = {'User-Agent': 'WebWeaver-Crawler/1.0'}
-            response = requests.get(current_url, headers=headers, timeout=15)
-            response.raise_for_status()
-
-            soup = BeautifulSoup(response.text, 'html.parser')
-            title = get_page_title(soup, current_url)
-
-            links = set()
-            for link in soup.find_all('a', href=True):
-                absolute_url = urljoin(current_url, link['href'])
-                absolute_url = absolute_url.split('#')[0]
-                if is_valid_url(absolute_url, base_domain):
-                    links.add(normalize_url(absolute_url))
-
-            pages[current_url] = {'title': title, 'links': list(links)}
-
-            for normalized_link in links:
-                if normalized_link not in visited:
-                    queue.append(normalized_link)
-
-            pages_crawled += 1
-            time.sleep(0.5)
-
-        except requests.exceptions.HTTPError as e:
-            status = e.response.status_code if e.response is not None else 0
-            errors[current_url] = f"HTTP {status}"
-            print(f"  -> [{status}] {current_url}")
-        except requests.exceptions.ConnectionError:
-            errors[current_url] = "connection error"
-            print(f"  -> [CONNECTION ERROR] {current_url}")
-        except requests.exceptions.Timeout:
-            errors[current_url] = "timeout"
-            print(f"  -> [TIMEOUT] {current_url}")
-        except requests.exceptions.RequestException as e:
-            errors[current_url] = str(e)[:50]
-            print(f"  -> Failed: {e}")
-        except Exception as e:
-            errors[current_url] = str(e)[:50]
-            print(f"  -> Error: {e}")
-
-    print(f"\nDone. Successfully crawled {pages_crawled} page(s).")
-    return pages, errors, base_domain
+async def crawl_page(url, browser, base_domain, visited):
+    page_time = time.time()
+    try:
+        page = await browser.new_page()
+        response = await page.goto(url, wait_until='domcontentloaded', timeout=20000)
+        status = response.status if response else 0
+        
+        await page.wait_for_load_state('networkidle', timeout=10000)
+        
+        content = await page.content()
+        load_time = (time.time() - page_time) * 1000
+        page_size = len(content.encode('utf-8'))
+        
+        await page.close()
+        
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(content, 'html.parser')
+        
+        return status, soup, load_time, page_size
+    except Exception as e:
+        load_time = (time.time() - page_time) * 1000
+        return 0, None, load_time, 0

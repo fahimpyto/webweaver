@@ -50,6 +50,10 @@ class PageNode:
         self.children = []
         self.crawled = True
         self.error = ''
+        self.load_time = 0
+        self.page_size = 0
+        self.status = 200
+        self.seo = {}
 
     def add_child(self, node):
         self.children.append(node)
@@ -72,6 +76,10 @@ class PageNode:
             'child_count': self.child_count,
             'crawled': self.crawled,
             'error': self.error,
+            'load_time': self.load_time,
+            'page_size': self.page_size,
+            'status': self.status,
+            'seo': self.seo,
             'children': [c.to_dict() for c in self.children],
         }
 
@@ -110,6 +118,14 @@ def build_tree(pages, start_url, errors=None):
     )
     root.emoji = '\U0001f3e0'
     root.crawled = start_url in pages or True
+    
+    if start_url in pages:
+        page_data = pages[start_url]
+        root.load_time = page_data.get('load_time', 0)
+        root.page_size = page_data.get('page_size', 0)
+        root.status = page_data.get('status', 200)
+        root.seo = page_data.get('seo', {})
+    
     all_nodes = {start_url: root}
 
     for url in sorted_urls:
@@ -130,6 +146,14 @@ def build_tree(pages, start_url, errors=None):
         node.emoji = get_emoji(parsed.path)
         node.crawled = is_crawled
         node.error = errors.get(url, '')
+        
+        if is_crawled:
+            page_data = pages[url]
+            node.load_time = page_data.get('load_time', 0)
+            node.page_size = page_data.get('page_size', 0)
+            node.status = page_data.get('status', 200)
+            node.seo = page_data.get('seo', {})
+        
         parent.add_child(node)
         all_nodes[url] = node
 
