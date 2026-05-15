@@ -24,7 +24,7 @@ WaveWeaver is designed for SEO specialists, web developers, and site owners who 
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/fahimpyto/WebWeaver.git
 cd waveweaver
 ```
 
