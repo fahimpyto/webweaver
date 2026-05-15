@@ -234,7 +234,7 @@ const app = {
     el.innerHTML =
       '<div class="n-hdr">' +
         '<span class="badge ' + badgeCls + '">' + st + '</span>' +
-        (hasChild ? '<div class="tg"></div>' : '<div style="width:18px"></div>') +
+        (hasChild ? '<div class="tg">' + (node.collapsed ? '+' : '−') + '</div>' : '<div style="width:18px"></div>') +
       '</div>' +
       '<div class="n-title" title="' + this.esc(node.title) + '">' + this.esc(node.title) + '</div>' +
       '<div class="n-url">' + this.esc(node.url || node.path) + '</div>' +
@@ -372,6 +372,13 @@ const app = {
     });
     window.addEventListener('mouseup', () => {
       this.panning = false;
+      vp.style.cursor = 'grab';
+    });
+    vp.addEventListener('mouseleave', () => {
+      this.panning = false;
+      vp.style.cursor = 'grab';
+    });
+    vp.addEventListener('mouseenter', () => {
       vp.style.cursor = 'grab';
     });
     vp.addEventListener('wheel', (e) => {
